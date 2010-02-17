@@ -38,8 +38,6 @@ local tostring = tostring
 local table = table
 local type = type
 
-local coroutine = coroutine
-
 module(...)
 
 local function assert(b, err, errlevel)
@@ -72,7 +70,6 @@ function new(user)
          o.username = user.username or "lua"
          o.realname = user.realname or "Lua owns"
          o.socket = socket.tcp()
-         o.thread = coroutine.wrap(meta.think)
          o.hooks = {}
          o.connected = false
 
@@ -80,46 +77,10 @@ function new(user)
 end
 
 function think()
-         local abort
-         for _,o in ipairs(clients) do
-             abort = o:thread()
-         end
-         return not abort
-end
-
-color = {
-	black = 1,
-	blue = 2,
-	green = 3,
-	red = 4,
-	lightred = 5,
-	purple = 6,
-	brown = 7,
-	yellow = 8,
-	lightgreen = 9,
-	navy = 10,
-	cyan = 11,
-	lightblue = 12,
-	violet = 13,
-	gray = 14,
-	lightgray = 15,
-	white = 16
-}
-
-local colByte = string.char(3)
-setmetatable(color, {__call = function(_, text, colornum)
-	colornum = type(colornum) == "string" and assert(color[colornum], "Invalid color '"..colornum.."'") or colornum
-	return table.concat{colByte, tostring(colornum), text, colByte}
-end})
-
-local boldByte = string.char(2)
-function bold(text)
-	return boldByte..text..boldByte
-end
-
-local underlineByte = string.char(31)
-function underline(text)
-	return underlineByte..text..underlineByte
+		local think = meta.think
+        for _,o in ipairs(clients) do
+            think(o)
+        end
 end
 
 function meta:hook(name, id, f)
@@ -187,24 +148,18 @@ function meta:shutdown()
 end
 
 function meta:think()
-         while true do
-               local line, err = self.socket:receive("*l")
-			   if not line then
-		           if err ~= "timeout" then
-		              self:shutdown()
-		              error(err)
-		              return true
-		           end
-			   else
- 				   if debug then print(line) end
-		           local prefix, cmd, params = parse(line)
+		local line, err
+		while true do
+			line, err = self.socket:receive("*l")
+			if not line then break end
+			self:handle(parse(line))
+		end
 
-		           self:handle(prefix, cmd, params)
-		           
-		           if not self.connected then return true end    
-			   end
-			   coroutine.yield()
-         end
+		if err ~= "timeout" then
+			o:invoke("OnDisconnect", err, true)			
+			self:shutdown()
+			error(err, 3)
+		end
 end
 
 function parsePrefix(prefix)
@@ -286,8 +241,15 @@ function meta:send(fmt, ...)
          self.socket:send(fmt:format(...) .. "\r\n")
 end
 
-function meta:sendChat(channel, fmt, ...)
-         self:send("PRIVMSG %s :"..fmt, channel, ...)
+function meta:sendChat(channel, msg)
+		 toChannel = ("PRIVMSG %s :"):format(channel)
+		 if msg:find("\r\n") then
+			 for line in msg:gmatch("(.+\r\n)") do
+		     	self.socket:send(toChannel..line)
+			 end
+		 else
+			self.socket:send(table.concat{toChannel, msg, "\r\n"})
+		 end
 end
 
 function meta:join(channel)
@@ -296,4 +258,39 @@ end
 
 function meta:part(channel)
          self:send("PART %s", channel)
+end
+
+color = {
+	black = 1,
+	blue = 2,
+	green = 3,
+	red = 4,
+	lightred = 5,
+	purple = 6,
+	brown = 7,
+	yellow = 8,
+	lightgreen = 9,
+	navy = 10,
+	cyan = 11,
+	lightblue = 12,
+	violet = 13,
+	gray = 14,
+	lightgray = 15,
+	white = 16
+}
+
+local colByte = string.char(3)
+setmetatable(color, {__call = function(_, text, colornum)
+	colornum = type(colornum) == "string" and assert(color[colornum], "Invalid color '"..colornum.."'") or colornum
+	return table.concat{colByte, tostring(colornum), text, colByte}
+end})
+
+local boldByte = string.char(2)
+function bold(text)
+	return boldByte..text..boldByte
+end
+
+local underlineByte = string.char(31)
+function underline(text)
+	return underlineByte..text..underlineByte
 end
