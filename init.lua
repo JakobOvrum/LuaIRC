@@ -223,6 +223,10 @@ handlers["PING"] = function(o, prefix, query)
 end
 
 handlers["001"] = function(o)
+		 if type(o.config.startup) == "function" then
+		 	o.config.startup(o)
+		 end
+
 		 o.join = postAuth_join
 		 for k,room in ipairs(o.rooms) do
 			o:join(room.name, room.key)
@@ -349,4 +353,17 @@ function meta:whois(nick)
 		result.account = result.account[3]
 	end
 	return result
+end
+
+function meta:setmode(t)
+	local target = t.target or self.nick
+	local mode = ""
+	local add, rem = t.add, t.remove
+	if add then
+		mode = table.concat{mode, "+", add}
+	elseif rem then
+		mode = table.concat{mode, "-", rem}
+	end
+	
+	self:send("MODE %s %s", target, mode)
 end
