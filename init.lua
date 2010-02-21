@@ -56,8 +56,12 @@ meta.__index = meta
 
 local meta_preconnect = {}
 
-local function postAuth_join(o, channel)
-	o:send("JOIN %s", channel)
+local function postAuth_join(o, channel, key)
+	if key then
+		o:send("JOIN %s :%s", channel, key)
+	else
+		o:send("JOIN %s", channel)
+	end
 end
 
 function meta_preconnect.__index(o, k)
@@ -136,7 +140,7 @@ meta_preconnect.connect = meta.connect
 function meta:disconnect(message)
          local message = message or "Bye!"
          
-         o:invoke("OnDisconnect", message, false)
+         self:invoke("OnDisconnect", message, false)
          self:send("QUIT :%s", message)
 
          self:shutdown()
@@ -221,7 +225,7 @@ end
 handlers["001"] = function(o)
 		 o.join = postAuth_join
 		 for k,room in ipairs(o.rooms) do
-			o:join(room)
+			o:join(room.name, room.key)
 		 end
 		 o.rooms = nil
 		 
@@ -269,8 +273,8 @@ function meta:sendChat(channel, msg)
 end
 
 --preAuth_join
-function meta:join(channel)
-         table.insert(self.rooms, channel)
+function meta:join(channel, key)
+         table.insert(self.rooms, {name = channel, key = key})
 end
 meta_preconnect.join = meta.join
 
