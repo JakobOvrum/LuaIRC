@@ -39,7 +39,7 @@ end
 function parsePrefix(prefix)
          local user = {}
          if prefix then
-            user.nick, user.username, user.host = prefix:match("(.*)!(.*)@(.*)")
+            user.access, user.nick, user.username, user.host = prefix:match("^([%+@]?)(.+)!(.+)@(.+)$")
          end
          return user
 end

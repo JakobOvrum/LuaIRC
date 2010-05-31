@@ -35,6 +35,7 @@ function new(user)
          	username = user.username or "lua";
          	realname = user.realname or "Lua owns";
          	hooks = {};
+         	track_users = true;
          }
          return setmetatable(o, meta_preconnect)
 end
@@ -43,13 +44,17 @@ function meta:hook(name, id, f)
 		 f = f or id
 		 self.hooks[name] = self.hooks[name] or {}
          self.hooks[name][id] = f
+         return id or f
 end
 meta_preconnect.hook = meta.hook
 
 
 function meta:unhook(name, id)
 		local hooks = self.hooks[name]
+
+		assert(hooks, "no hooks exist for this event")
 		assert(hooks[id], "hook ID not found")
+		
 		hooks[id] = nil
 end
 meta_preconnect.unhook = meta.unhook
@@ -75,6 +80,8 @@ function meta_preconnect:connect(server, port, timeout)
 
          self:send("USER %s 0 * :%s", self.username, self.realname)
          self:send("NICK %s", self.nick)
+
+         self.channels = {}
 
 		 s:settimeout(0)
 		 repeat
@@ -139,11 +146,47 @@ handlers["NOTICE"] = function(o, prefix, channel, message)
 end
 
 handlers["JOIN"] = function(o, prefix, channel)
-         o:invoke("OnJoin", parsePrefix(prefix), channel)
+		 local user = parsePrefix(prefix)
+		 if o.track_users then
+		 	if user.nick == o.nick then
+		 		o.channels[channel] = {users = {}}
+		 	else
+		 		o.channels[channel].users[user.nick] = user
+		 	end
+		 end
+		 
+         o:invoke("OnJoin", user, channel)
 end
 
 handlers["PART"] = function(o, prefix, channel, reason)
-         o:invoke("OnPart", parsePrefix(prefix), channel, reason)
+		 local user = parsePrefix(prefix)
+		 if o.track_users then
+		 	if user.nick == o.nick then
+		 		o.channels[channel] = nil
+		 	else
+		 		o.channels[channel].users[user.nick] = nil
+		 	end
+		 end
+         o:invoke("OnPart", user, channel, reason)
+end
+
+--NAMES list
+handlers["353"] = function(o, prefix, me, chanType, channel, names)
+		 if o.track_users then
+		 	o.channels[channel] = o.channels[channel] or {users = {}, type = chanType}
+		 	
+		 	local users = o.channels[channel].users
+		 	for nick in names:gmatch("(%S+)") do
+		 		users[nick] = {}
+		 	end
+		 end
+end
+
+--end of NAMES
+handlers["366"] = function(o, prefix, me, channel, msg)
+		 if o.track_users then
+		 	o:invoke("NameList", channel, msg)
+		 end
 end
 
 handlers["ERROR"] = function(o, prefix, message)
