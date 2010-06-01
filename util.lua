@@ -36,6 +36,10 @@ function parse(line)
          return prefix, cmd, params
 end
 
+function parseNick(nick)
+		 return nick:match("^([%+@]?)(.+)$")
+end
+
 function parsePrefix(prefix)
          local user = {}
          if prefix then

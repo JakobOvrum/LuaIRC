@@ -177,7 +177,8 @@ handlers["353"] = function(o, prefix, me, chanType, channel, names)
 		 	
 		 	local users = o.channels[channel].users
 		 	for nick in names:gmatch("(%S+)") do
-		 		users[nick] = {}
+		 		local access, name = parseNick(nick)
+		 		users[name] = {type = access}
 		 	end
 		 end
 end
