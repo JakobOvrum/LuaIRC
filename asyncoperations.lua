@@ -33,6 +33,9 @@ end
 
 function meta:part(channel)
          self:send("PART %s", channel)
+         if self.track_users then
+         	self.channels[channel] = nil
+         end
 end
 
 function meta:trackUsers(b)

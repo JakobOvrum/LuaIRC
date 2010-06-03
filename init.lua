@@ -170,6 +170,33 @@ handlers["PART"] = function(o, prefix, channel, reason)
          o:invoke("OnPart", user, channel, reason)
 end
 
+handlers["QUIT"] = function(o, prefix, msg)
+		 local user = parsePrefix(prefix)
+		 if o.track_users then
+		 	for channel, v in pairs(o.channels) do
+		 		v.users[user.nick] = nil
+		 	end
+		 end
+		 o:invoke("OnQuit", user, msg)
+end
+
+handlers["NICK"] = function(o, prefix, newnick)
+		 local user = parsePrefix(prefix)
+		 if o.track_users then
+		 	for channel, v in pairs(o.channels) do
+		 		local users = v.users
+		 		local oldinfo = users[user.nick]
+		 		if oldinfo then
+		 			users[newnick] = oldinfo
+		 			users[user.nick] = nil
+		 			o:invoke("NickChange", user, newnick, channel)
+		 		end
+		 	end
+		 else
+		 	o:invoke("NickChange", user, newnick)
+		 end
+end
+
 --NAMES list
 handlers["353"] = function(o, prefix, me, chanType, channel, names)
 		 if o.track_users then
