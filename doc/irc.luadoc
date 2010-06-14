@@ -1,0 +1,68 @@
+--- LuaIRC is a low-level IRC library for Lua.
+-- All functions raise Lua exceptions on error.
+module "irc"
+
+--- Create a new IRC object.
+-- The <code>user</code> parameter can contain fields <code>nick</code>, <code>username</code> and <code>realname</code>.
+-- The <code>nick</code> field is required.
+-- Returns a new <code>irc</code> object.
+function new(user)
+
+--- Hooks function <code>f</code> to event <code>name</code>, with the unique tag <code>id</code>.
+-- If parameter <code>f</code> is absent, <code>id</code> is assumed to be both the callback function and unique tag.
+function irc:hook(name, id, f)
+
+--- Removes previous hooked callback with the tag <code>id</code> from event <code>name</code>.
+function irc:unhook(name, id)
+
+--internal
+function irc:invoke(name, ...)
+
+--- Connects <code>irc</code> to <code>server:port</code>, with the connection timeout value <code>timeout</code>.
+function irc:connect(server, port, timeout)
+
+--- Disconnects <code>irc</code> from the server, with the quit message <code>message</code>.
+function irc:disconnect(message)
+
+--internal
+function irc:shutdown()
+
+--- Handles incoming data for <code>irc</code>, and invokes previously hooked callbacks based on the new server input.
+-- You should call this in some kind of main loop, or at least often enough not to time out.
+function irc:think()
+
+--internal
+function irc:handle(prefix, cmd, params)
+
+--- Sends a WHOIS lookup request for <code>nick</code>.
+-- Returns a table with the fields <code>userinfo</code>, <code>node</code>, <code>channels</code> and <code>account</code>.
+function irc:whois(nick)
+
+--- Sends a raw line of IRC to the server.
+-- <code>fmt</code> is the line to be sent, without the newline characters. 
+-- <code>fmt</code> can be a format string taking the parameters <code>...</code>, with <code>string.format</code> semantics.
+function irc:send(fmt, ...)
+
+--- Sends the message <code>msg</code> to <code>target</code>.
+-- <code>target</code> should be either a channel or nick.
+function irc:sendChat(target, msg)
+
+--- Sends the notice <code>msg</code> to <code>target</code>.
+-- <code>target</code> should be either a channel or nick.
+function irc:sendNotice(target, msg)
+
+--- Joins <code>channel</code>, optionally with the channel password <code>key</code>.
+function irc:join(channel, key)
+
+--- Leaves <code>channel</code>.
+function irc:part(channel)
+
+--- Specifies whether to cache user information or not with the boolean <code>b</code>.
+function irc:trackUsers(b)
+
+--- Adds and/or removes modes for a channel or nick.
+-- Either <code>t.target</code> or <code>t.nick</code> specifies the channel or nick to add/remove modes.
+-- <code>t.add</code> is a list of modes to add to the target.
+-- <code>t.rem</code> is a list of modes to remove from the target.
+-- Example which sets +m (moderated) for #channel: <code>irc:setMode{target = "#channel", add = "m"}</code>
+function irc:setMode(t)
