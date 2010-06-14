@@ -53,7 +53,7 @@
 
 <h1>Module <code>irc</code></h1>
 
-<p>LuaIRC is a low-level IRC library for Lua. All functions raise Lua exceptions on error.</p>
+<p>LuaIRC is a low-level IRC library for Lua. All functions raise Lua exceptions on error.  Use <code>new</code> to create a new IRC object.<br/> Example:<br/><br/> <code> require "irc"<br/> local sleep = require "socket".sleep<br/> <br/> local s = irc.new{nick = "example"}<br/> <br/> s:hook("OnChat", function(user, channel, message)<br/> print(("[%s] %s: %s"):format(channel, user.nick, message))<br/> end)<br/> <br/> s:connect("irc.example.net")<br/> s:join("#example")<br/> <br/> while true do<br/> s:think()<br/> sleep(0.5)<br/> end<br/> </code></p>
 
 
 
@@ -84,7 +84,7 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:part">irc:part</a>&nbsp;(channel)</td>
-	<td class="summary">Parts <code>channel</code>.</td>
+	<td class="summary">Leaves <code>channel</code>.</td>
 	</tr>
 
 	<tr>
@@ -275,7 +275,7 @@ Joins <code>channel</code>, optionally with the channel password <code>key</code
 
 <dt><a name="irc:part"></a><strong>irc:part</strong>&nbsp;(channel)</dt>
 <dd>
-Parts <code>channel</code>.
+Leaves <code>channel</code>.
 
 
 <h3>Parameters</h3>

@@ -1,5 +1,27 @@
 --- LuaIRC is a low-level IRC library for Lua.
 -- All functions raise Lua exceptions on error.
+--
+-- Use <code>new</code> to create a new IRC object.<br/>
+-- Example:<br/><br/>
+--<code>
+--require "irc"<br/>
+--local sleep = require "socket".sleep<br/>
+--<br/>
+--local s = irc.new{nick = "example"}<br/>
+--<br/>
+--s:hook("OnChat", function(user, channel, message)<br/>
+--    print(("[%s] %s: %s"):format(channel, user.nick, message))<br/>
+--end)<br/>
+--<br/>
+--s:connect("irc.example.net")<br/>
+--s:join("#example")<br/>
+--<br/>
+--while true do<br/>
+--    s:think()<br/>
+--    sleep(0.5)<br/>
+--end<br/>
+--</code>
+
 module "irc"
 
 --- Create a new IRC object.
