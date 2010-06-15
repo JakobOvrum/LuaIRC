@@ -64,67 +64,67 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:connect">irc:connect</a>&nbsp;(server, port, timeout)</td>
-	<td class="summary">Connects <code>irc</code> to <code>server:port</code>, with the connection timeout value <code>timeout</code>.</td>
+	<td class="summary">Connect <code>irc</code> to an IRC server.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:disconnect">irc:disconnect</a>&nbsp;(message)</td>
-	<td class="summary">Disconnects <code>irc</code> from the server, with the quit message <code>message</code>.</td>
+	<td class="summary">Disconnect <code>irc</code> from the server.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:hook">irc:hook</a>&nbsp;(name, id, f)</td>
-	<td class="summary">Hooks function <code>f</code> to event <code>name</code>, with the unique tag <code>id</code>.</td>
+	<td class="summary">Hook a function to an event.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:join">irc:join</a>&nbsp;(channel, key)</td>
-	<td class="summary">Joins <code>channel</code>, optionally with the channel password <code>key</code>.</td>
+	<td class="summary">Join a channel.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:part">irc:part</a>&nbsp;(channel)</td>
-	<td class="summary">Leaves <code>channel</code>.</td>
+	<td class="summary">Leave a channel.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:send">irc:send</a>&nbsp;(fmt, ...)</td>
-	<td class="summary">Sends a raw line of IRC to the server.</td>
+	<td class="summary">Send a raw line of IRC to the server.</td>
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#irc:sendChat">irc:sendChat</a>&nbsp;(target, msg)</td>
-	<td class="summary">Sends the message <code>msg</code> to <code>target</code>.</td>
+	<td class="name" nowrap><a href="#irc:sendChat">irc:sendChat</a>&nbsp;(target, message)</td>
+	<td class="summary">Send a message to a channel or user.</td>
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#irc:sendNotice">irc:sendNotice</a>&nbsp;(target, msg)</td>
-	<td class="summary">Sends the notice <code>msg</code> to <code>target</code>.</td>
+	<td class="name" nowrap><a href="#irc:sendNotice">irc:sendNotice</a>&nbsp;(target, message)</td>
+	<td class="summary">Send a notice to a channel or user.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:setMode">irc:setMode</a>&nbsp;(t)</td>
-	<td class="summary">Adds and/or removes modes for a channel or nick.</td>
+	<td class="summary">Add/remove modes for a channel or nick.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:think">irc:think</a>&nbsp;()</td>
-	<td class="summary">Handles incoming data for <code>irc</code>, and invokes previously hooked callbacks based on the new server input.</td>
+	<td class="summary">Handle incoming data for <code>irc</code>, and invoke previously hooked callbacks based on new server input.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:trackUsers">irc:trackUsers</a>&nbsp;(b)</td>
-	<td class="summary">Specifies whether to cache user information or not with the boolean <code>b</code>.</td>
+	<td class="summary">Turn user information tracking on or off.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:unhook">irc:unhook</a>&nbsp;(name, id)</td>
-	<td class="summary">Removes previous hooked callback with the tag <code>id</code> from event <code>name</code>.</td>
+	<td class="summary">Remove previous hooked callback.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#irc:whois">irc:whois</a>&nbsp;(nick)</td>
-	<td class="summary">Sends a WHOIS lookup request for <code>nick</code>.</td>
+	<td class="summary">Look up user info.</td>
 	</tr>
 
 	<tr>
@@ -136,6 +136,21 @@
 
 
 
+
+<h2>Tables</h2>
+<table class="table_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#Hooks">Hooks</a></td>
+	<td class="summary">List of hooks you can use with irc:hook.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#User">User</a></td>
+	<td class="summary">Table with information about a user.</td>
+	</tr>
+
+</table>
 
 
 
@@ -151,22 +166,22 @@
 
 <dt><a name="irc:connect"></a><strong>irc:connect</strong>&nbsp;(server, port, timeout)</dt>
 <dd>
-Connects <code>irc</code> to <code>server:port</code>, with the connection timeout value <code>timeout</code>.
+Connect <code>irc</code> to an IRC server.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  server: 
+	  server: Server address.
 	</li>
 	
 	<li>
-	  port: 
+	  port: Server port. [default 6667]
 	</li>
 	
 	<li>
-	  timeout: 
+	  timeout: Connection timeout value in seconds. [default 30]
 	</li>
 	
 </ul>
@@ -185,14 +200,14 @@ Connects <code>irc</code> to <code>server:port</code>, with the connection timeo
 
 <dt><a name="irc:disconnect"></a><strong>irc:disconnect</strong>&nbsp;(message)</dt>
 <dd>
-Disconnects <code>irc</code> from the server, with the quit message <code>message</code>.
+Disconnect <code>irc</code> from the server.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  message: 
+	  message: Quit message.
 	</li>
 	
 </ul>
@@ -211,22 +226,22 @@ Disconnects <code>irc</code> from the server, with the quit message <code>messag
 
 <dt><a name="irc:hook"></a><strong>irc:hook</strong>&nbsp;(name, id, f)</dt>
 <dd>
-Hooks function <code>f</code> to event <code>name</code>, with the unique tag <code>id</code>. If parameter <code>f</code> is absent, <code>id</code> is assumed to be both the callback function and unique tag.
+Hook a function to an event.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  name: 
+	  name: Name of event.
 	</li>
 	
 	<li>
-	  id: 
+	  id: Unique tag.
 	</li>
 	
 	<li>
-	  f: 
+	  f: Callback function. [defaults to <code>id</code>]
 	</li>
 	
 </ul>
@@ -238,6 +253,15 @@ Hooks function <code>f</code> to event <code>name</code>, with the unique tag <c
 
 
 
+<h3>See also:</h3>
+<ul>
+	
+	<li><a href="../modules/irc.html#Hooks">
+		Hooks
+	</a>
+	
+</ul>
+
 </dd>
 
 
@@ -245,18 +269,18 @@ Hooks function <code>f</code> to event <code>name</code>, with the unique tag <c
 
 <dt><a name="irc:join"></a><strong>irc:join</strong>&nbsp;(channel, key)</dt>
 <dd>
-Joins <code>channel</code>, optionally with the channel password <code>key</code>.
+Join a channel.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  channel: 
+	  channel: Channel to join.
 	</li>
 	
 	<li>
-	  key: 
+	  key: Channel password. [optional]
 	</li>
 	
 </ul>
@@ -275,14 +299,14 @@ Joins <code>channel</code>, optionally with the channel password <code>key</code
 
 <dt><a name="irc:part"></a><strong>irc:part</strong>&nbsp;(channel)</dt>
 <dd>
-Leaves <code>channel</code>.
+Leave a channel.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  channel: 
+	  channel: Channel to leave.
 	</li>
 	
 </ul>
@@ -301,18 +325,18 @@ Leaves <code>channel</code>.
 
 <dt><a name="irc:send"></a><strong>irc:send</strong>&nbsp;(fmt, ...)</dt>
 <dd>
-Sends a raw line of IRC to the server. <code>fmt</code> is the line to be sent, without the newline characters. <code>fmt</code> can be a format string taking the parameters <code>...</code>, with <code>string.format</code> semantics.
+Send a raw line of IRC to the server.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  fmt: 
+	  fmt: Line to be sent, excluding newline characters.
 	</li>
 	
 	<li>
-	  ...: 
+	  ...: Format parameters for <code>fmt</code>, with <code>string.format</code> semantics.
 	</li>
 	
 </ul>
@@ -329,20 +353,20 @@ Sends a raw line of IRC to the server. <code>fmt</code> is the line to be sent, 
 
 
 
-<dt><a name="irc:sendChat"></a><strong>irc:sendChat</strong>&nbsp;(target, msg)</dt>
+<dt><a name="irc:sendChat"></a><strong>irc:sendChat</strong>&nbsp;(target, message)</dt>
 <dd>
-Sends the message <code>msg</code> to <code>target</code>. <code>target</code> should be either a channel or nick.
+Send a message to a channel or user.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  target: 
+	  target: Nick or channel to send to.
 	</li>
 	
 	<li>
-	  msg: 
+	  message: Message to send.
 	</li>
 	
 </ul>
@@ -359,20 +383,20 @@ Sends the message <code>msg</code> to <code>target</code>. <code>target</code> s
 
 
 
-<dt><a name="irc:sendNotice"></a><strong>irc:sendNotice</strong>&nbsp;(target, msg)</dt>
+<dt><a name="irc:sendNotice"></a><strong>irc:sendNotice</strong>&nbsp;(target, message)</dt>
 <dd>
-Sends the notice <code>msg</code> to <code>target</code>. <code>target</code> should be either a channel or nick.
+Send a notice to a channel or user.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  target: 
+	  target: Nick or channel to send to.
 	</li>
 	
 	<li>
-	  msg: 
+	  message: Notice to send.
 	</li>
 	
 </ul>
@@ -391,20 +415,23 @@ Sends the notice <code>msg</code> to <code>target</code>. <code>target</code> sh
 
 <dt><a name="irc:setMode"></a><strong>irc:setMode</strong>&nbsp;(t)</dt>
 <dd>
-Adds and/or removes modes for a channel or nick. Either <code>t.target</code> or <code>t.nick</code> specifies the channel or nick to add/remove modes. <code>t.add</code> is a list of modes to add to the target. <code>t.rem</code> is a list of modes to remove from the target. Example which sets +m (moderated) for #channel: <code>irc:setMode{target = "#channel", add = "m"}</code>
+Add/remove modes for a channel or nick.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  t: 
+	  t: Table with fields <code>target, nick, add</code> and/or <code>rem</code>. <code>target</code> or <code>nick</code> specifies the user or channel to add/remove modes. <code>add</code> is a list of modes to add to the user or channel. <code>rem</code> is a list of modes to remove from the user or channel.
 	</li>
 	
 </ul>
 
 
 
+
+<h3>Usage:</h3>
+Example which sets +m (moderated) for #channel: <br/> <code>irc:setMode{target = "#channel", add = "m"}</code>
 
 
 
@@ -417,7 +444,7 @@ Adds and/or removes modes for a channel or nick. Either <code>t.target</code> or
 
 <dt><a name="irc:think"></a><strong>irc:think</strong>&nbsp;()</dt>
 <dd>
-Handles incoming data for <code>irc</code>, and invokes previously hooked callbacks based on the new server input. You should call this in some kind of main loop, or at least often enough not to time out.
+Handle incoming data for <code>irc</code>, and invoke previously hooked callbacks based on new server input. You should call this in some kind of main loop, or at least often enough to not time out.
 
 
 
@@ -434,14 +461,14 @@ Handles incoming data for <code>irc</code>, and invokes previously hooked callba
 
 <dt><a name="irc:trackUsers"></a><strong>irc:trackUsers</strong>&nbsp;(b)</dt>
 <dd>
-Specifies whether to cache user information or not with the boolean <code>b</code>.
+Turn user information tracking on or off. User tracking is enabled by default.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  b: 
+	  b: Boolean whether or not to track user information.
 	</li>
 	
 </ul>
@@ -460,18 +487,18 @@ Specifies whether to cache user information or not with the boolean <code>b</cod
 
 <dt><a name="irc:unhook"></a><strong>irc:unhook</strong>&nbsp;(name, id)</dt>
 <dd>
-Removes previous hooked callback with the tag <code>id</code> from event <code>name</code>.
+Remove previous hooked callback.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  name: 
+	  name: Name of event.
 	</li>
 	
 	<li>
-	  id: 
+	  id: Unique tag.
 	</li>
 	
 </ul>
@@ -490,14 +517,14 @@ Removes previous hooked callback with the tag <code>id</code> from event <code>n
 
 <dt><a name="irc:whois"></a><strong>irc:whois</strong>&nbsp;(nick)</dt>
 <dd>
-Sends a WHOIS lookup request for <code>nick</code>. Returns a table with the fields <code>userinfo</code>, <code>node</code>, <code>channels</code> and <code>account</code>.
+Look up user info.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  nick: 
+	  nick: Nick of user to query.
 	</li>
 	
 </ul>
@@ -506,6 +533,9 @@ Sends a WHOIS lookup request for <code>nick</code>. Returns a table with the fie
 
 
 
+
+<h3>Return value:</h3>
+Table with fields <code>userinfo</code>, <code>node</code>, <code>channels</code> and <code>account</code>.
 
 
 
@@ -516,14 +546,14 @@ Sends a WHOIS lookup request for <code>nick</code>. Returns a table with the fie
 
 <dt><a name="new"></a><strong>new</strong>&nbsp;(user)</dt>
 <dd>
-Create a new IRC object. The <code>user</code> parameter can contain fields <code>nick</code>, <code>username</code> and <code>realname</code>. The <code>nick</code> field is required. Returns a new <code>irc</code> object.
+Create a new IRC object. Use <code>irc:connect</code> to connect to a server.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  user: 
+	  user: Table with fields <code>nick</code>, <code>username</code> and <code>realname</code>. The <code>nick</code> field is required. 
 	</li>
 	
 </ul>
@@ -532,6 +562,9 @@ Create a new IRC object. The <code>user</code> parameter can contain fields <cod
 
 
 
+
+<h3>Return value:</h3>
+Returns a new <code>irc</code> object.
 
 
 
@@ -542,6 +575,27 @@ Create a new IRC object. The <code>user</code> parameter can contain fields <cod
 
 
 
+
+<h2><a name="tables"></a>Tables</h2>
+<dl class="table">
+
+<dt><a name="Hooks"></a><strong>Hooks</strong></dt>
+<dd>List of hooks you can use with irc:hook. The parameter list describes the parameters passed to the callback function. <ul> <li><code>OnDisconnect(message, errorOccurred)</code></li> <li><code>OnChat(user, channel, message)</code></li> <li><code>OnNotice(user, channel, message)</code></li> <li><code>OnJoin(user, channel)</code>*</li> <li><code>OnPart(user, channel)</code>*</li> <li><code>OnQuit(user, message)</code></li> <li><code>NickChange(user, newnick)</code>*</li> <li><code>NameList(channel, names)</code></li> </ul> * Event also invoked for yourself.
+
+
+
+</dd>
+
+
+<dt><a name="User"></a><strong>User</strong></dt>
+<dd>Table with information about a user. <ul> <li><code>nick</code> - User nickname. Always present.</li> <li><code>username</code> - User username.</li> <li><code>host</code> - User hostname.</li> <li><code>realname</code> - User real name.</li> <li><code>access</code> - User access, available in channel-oriented callbacks. Can be '+', '@', and others, depending on the server.</li> </ul> Apart from <code>nick</code>, fields may be missing. To fill them in, enable user tracking and use irc:whois.
+
+
+
+</dd>
+
+
+</dl>
 
 
 

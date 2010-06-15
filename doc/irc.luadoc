@@ -24,67 +24,108 @@
 
 module "irc"
 
---- Create a new IRC object.
--- The <code>user</code> parameter can contain fields <code>nick</code>, <code>username</code> and <code>realname</code>.
+--- Create a new IRC object. Use <code>irc:connect</code> to connect to a server.
+-- @param user Table with fields <code>nick</code>, <code>username</code> and <code>realname</code>.
 -- The <code>nick</code> field is required.
--- Returns a new <code>irc</code> object.
+--
+-- @return Returns a new <code>irc</code> object.
 function new(user)
 
---- Hooks function <code>f</code> to event <code>name</code>, with the unique tag <code>id</code>.
--- If parameter <code>f</code> is absent, <code>id</code> is assumed to be both the callback function and unique tag.
+--- Hook a function to an event.
+-- @param name Name of event.
+-- @param id Unique tag.
+-- @param f Callback function. [defaults to <code>id</code>]
+-- @see Hooks
 function irc:hook(name, id, f)
 
---- Removes previous hooked callback with the tag <code>id</code> from event <code>name</code>.
+--- Remove previous hooked callback.
+-- @param name Name of event.
+-- @param id Unique tag.
 function irc:unhook(name, id)
+
+--- Connect <code>irc</code> to an IRC server.
+-- @param server Server address.
+-- @param port Server port. [default 6667]
+-- @param timeout Connection timeout value in seconds. [default 30]
+function irc:connect(server, port, timeout)
+
+--- Disconnect <code>irc</code> from the server.
+-- @param message Quit message.
+function irc:disconnect(message)
+
+--- Handle incoming data for <code>irc</code>, and invoke previously hooked callbacks based on new server input.
+-- You should call this in some kind of main loop, or at least often enough to not time out.
+function irc:think()
+
+--- Look up user info.
+-- @param nick Nick of user to query.
+-- @return Table with fields <code>userinfo</code>, <code>node</code>, <code>channels</code> and <code>account</code>.
+function irc:whois(nick)
+
+--- Send a raw line of IRC to the server.
+-- @param fmt Line to be sent, excluding newline characters.
+-- @param ... Format parameters for <code>fmt</code>, with <code>string.format</code> semantics.
+function irc:send(fmt, ...)
+
+--- Send a message to a channel or user.
+-- @param target Nick or channel to send to.
+-- @param message Message to send.
+function irc:sendChat(target, message)
+
+--- Send a notice to a channel or user.
+-- @param target Nick or channel to send to.
+-- @param message Notice to send.
+function irc:sendNotice(target, message)
+
+--- Join a channel.
+-- @param channel Channel to join.
+-- @param key Channel password. [optional]
+function irc:join(channel, key)
+
+--- Leave a channel.
+-- @param channel Channel to leave.
+function irc:part(channel)
+
+--- Turn user information tracking on or off. User tracking is enabled by default.
+-- @param b Boolean whether or not to track user information.
+function irc:trackUsers(b)
+
+--- Add/remove modes for a channel or nick.
+-- @param t Table with fields <code>target, nick, add</code> and/or <code>rem</code>. <code>target</code> or <code>nick</code>
+-- specifies the user or channel to add/remove modes. <code>add</code> is a list of modes to add to the user or channel.
+-- <code>rem</code> is a list of modes to remove from the user or channel.
+-- @usage Example which sets +m (moderated) for #channel: <br/>
+-- <code>irc:setMode{target = "#channel", add = "m"}</code>
+function irc:setMode(t)
 
 --internal
 function irc:invoke(name, ...)
-
---- Connects <code>irc</code> to <code>server:port</code>, with the connection timeout value <code>timeout</code>.
-function irc:connect(server, port, timeout)
-
---- Disconnects <code>irc</code> from the server, with the quit message <code>message</code>.
-function irc:disconnect(message)
-
---internal
+function irc:handle(prefix, cmd, params)
 function irc:shutdown()
 
---- Handles incoming data for <code>irc</code>, and invokes previously hooked callbacks based on the new server input.
--- You should call this in some kind of main loop, or at least often enough not to time out.
-function irc:think()
+--- List of hooks you can use with irc:hook. The parameter list describes the parameters passed to the callback function.
+-- <ul>
+-- <li><code>OnDisconnect(message, errorOccurred)</code></li>
+-- <li><code>OnChat(user, channel, message)</code></li>
+-- <li><code>OnNotice(user, channel, message)</code></li>
+-- <li><code>OnJoin(user, channel)</code>*</li>
+-- <li><code>OnPart(user, channel)</code>*</li>
+-- <li><code>OnQuit(user, message)</code></li>
+-- <li><code>NickChange(user, newnick)</code>*</li>
+-- <li><code>NameList(channel, names)</code></li>
+-- </ul>
+-- * Event also invoked for yourself.
+-- @name Hooks
+-- @class table
 
---internal
-function irc:handle(prefix, cmd, params)
-
---- Sends a WHOIS lookup request for <code>nick</code>.
--- Returns a table with the fields <code>userinfo</code>, <code>node</code>, <code>channels</code> and <code>account</code>.
-function irc:whois(nick)
-
---- Sends a raw line of IRC to the server.
--- <code>fmt</code> is the line to be sent, without the newline characters. 
--- <code>fmt</code> can be a format string taking the parameters <code>...</code>, with <code>string.format</code> semantics.
-function irc:send(fmt, ...)
-
---- Sends the message <code>msg</code> to <code>target</code>.
--- <code>target</code> should be either a channel or nick.
-function irc:sendChat(target, msg)
-
---- Sends the notice <code>msg</code> to <code>target</code>.
--- <code>target</code> should be either a channel or nick.
-function irc:sendNotice(target, msg)
-
---- Joins <code>channel</code>, optionally with the channel password <code>key</code>.
-function irc:join(channel, key)
-
---- Leaves <code>channel</code>.
-function irc:part(channel)
-
---- Specifies whether to cache user information or not with the boolean <code>b</code>.
-function irc:trackUsers(b)
-
---- Adds and/or removes modes for a channel or nick.
--- Either <code>t.target</code> or <code>t.nick</code> specifies the channel or nick to add/remove modes.
--- <code>t.add</code> is a list of modes to add to the target.
--- <code>t.rem</code> is a list of modes to remove from the target.
--- Example which sets +m (moderated) for #channel: <code>irc:setMode{target = "#channel", add = "m"}</code>
-function irc:setMode(t)
+--- Table with information about a user.
+-- <ul>
+-- <li><code>nick</code> - User nickname. Always present.</li>
+-- <li><code>username</code> - User username.</li>
+-- <li><code>host</code> - User hostname.</li>
+-- <li><code>realname</code> - User real name.</li>
+-- <li><code>access</code> - User access, available in channel-oriented callbacks. Can be '+', '@', and others, depending on the server.</li>
+-- </ul>
+-- Apart from <code>nick</code>, fields may be missing. To fill them in, enable user tracking and use irc:whois.
+-- @name User
+-- @class table
