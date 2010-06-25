@@ -234,7 +234,8 @@ local whoisHandlers = {
 	["311"] = "userinfo";
 	["312"] = "node";
 	["319"] = "channels";
-	["330"] = "account";
+	["330"] = "account"; -- Freenode
+	["307"] = "registered"; -- Unreal
 }
 
 function meta:whois(nick)
@@ -261,5 +262,10 @@ function meta:whois(nick)
 	if result.account then
 		result.account = result.account[3]
 	end
+
+	if result.registered then
+		result.account = result.registered[2]
+	end
+
 	return result
 end
