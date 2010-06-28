@@ -111,10 +111,11 @@ function irc:shutdown()
 -- <li><code>OnJoin(user, channel)</code>*</li>
 -- <li><code>OnPart(user, channel)</code>*</li>
 -- <li><code>OnQuit(user, message)</code></li>
--- <li><code>NickChange(user, newnick)</code>*</li>
+-- <li><code>NickChange(user, newnick, channel)</code>*†</li>
 -- <li><code>NameList(channel, names)</code></li>
 -- </ul>
 -- * Event also invoked for yourself.
+-- † Channel passed only when user tracking is enabled
 -- @name Hooks
 -- @class table
 
