@@ -9,31 +9,41 @@ module "irc"
 
 --protocol parsing
 function parse(line)
-         local colonsplit = line:find(":", 2)
-         local last
-         if colonsplit then
-            last = line:sub(colonsplit+1)
-            line = line:sub(1, colonsplit-2)
-         end
+    local prefix
+	local lineStart = 1
+    if line:sub(1,1) == ":" then
+        local space = line:find(" ")
+        prefix = line:sub(2, space-1)
+		lineStart = space
+    end
+    
+    local trailtoken = line:find(":", lineStart)
+	local lineStop = -1
+    local trailing
+    if trailtoken then
+        trailing = line:sub(trailtoken + 1)
+		lineStop = trailtoken - 2
+    end
 
-         local prefix
-         if line:sub(1,1) == ":" then
-            local space = line:find(" ")
-            prefix = line:sub(2, space-1)
-            line = line:sub(space)
-         end
-         
-         local params = {}
-         local it, state, init = line:gmatch("(%S+)")
-         local cmd = it(state, init)
+    local params = {}
 
-         for sub in it, state, init do
-             params[#params + 1] = sub
-         end
+	local _, cmdEnd, cmd = line:find("(%S+)", lineStart)
+	local pos = cmdEnd + 1
+	while true do
+		local _, stop, param = line:find("(%S+)", pos)
+		params[#params + 1] = param
+		pos = stop + 1
 
-         if last then params[#params + 1] = last end
+		if pos >= lineStop then
+			break
+		end
+	end
 
-         return prefix, cmd, params
+    if trailing then 
+        params[#params + 1] = trailing 
+    end
+
+    return prefix, cmd, params
 end
 
 function parseNick(nick)
