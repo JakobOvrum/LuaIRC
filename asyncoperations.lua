@@ -5,7 +5,7 @@ module "irc"
 local meta = _META
 
 function meta:send(fmt, ...)
-         self.socket:send(fmt:format(...) .. "\r\n")
+	self.socket:send(fmt:format(...) .. "\r\n")
 end
 
 local function sendByMethod(self, method, target, msg)
@@ -32,10 +32,10 @@ function meta:join(channel, key)
 end
 
 function meta:part(channel)
-         self:send("PART %s", channel)
-         if self.track_users then
-         	self.channels[channel] = nil
-         end
+	self:send("PART %s", channel)
+    if self.track_users then
+		self.channels[channel] = nil
+    end
 end
 
 function meta:trackUsers(b)
