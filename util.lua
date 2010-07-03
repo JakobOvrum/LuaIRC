@@ -17,12 +17,12 @@ function parse(line)
 		lineStart = space
     end
     
-    local trailtoken = line:find(":", lineStart)
+    local trailToken = line:find(":", lineStart)
 	local lineStop = -1
     local trailing
-    if trailtoken then
-        trailing = line:sub(trailtoken + 1)
-		lineStop = trailtoken - 2
+    if trailToken then
+        trailing = line:sub(trailToken + 1)
+		lineStop = trailToken - 2
     end
 
     local params = {}
@@ -31,12 +31,13 @@ function parse(line)
 	local pos = cmdEnd + 1
 	while true do
 		local _, stop, param = line:find("(%S+)", pos)
-		params[#params + 1] = param
-		pos = stop + 1
-
-		if pos >= lineStop then
+		
+		if stop >= lineStop then
 			break
 		end
+
+		pos = stop + 1
+		params[#params + 1] = param
 	end
 
     if trailing then 
