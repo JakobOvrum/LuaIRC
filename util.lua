@@ -18,7 +18,7 @@ function parse(line)
     end
     
     local trailToken = line:find(":", lineStart)
-	local lineStop = -1
+	local lineStop = line:len()
     local trailing
     if trailToken then
         trailing = line:sub(trailToken + 1)
@@ -32,7 +32,7 @@ function parse(line)
 	while true do
 		local _, stop, param = line:find("(%S+)", pos)
 		
-		if stop >= lineStop then
+		if not param or stop > lineStop then
 			break
 		end
 
