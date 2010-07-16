@@ -108,7 +108,7 @@ local function getline(self, errlevel)
 	line, err = self.socket:receive("*l")
 	
 	if not line and err ~= "timeout" then
-		o:invoke("OnDisconnect", err, true)			
+		self:invoke("OnDisconnect", err, true)			
 		self:shutdown()
 		error(err, errlevel)
 	end
