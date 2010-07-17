@@ -62,6 +62,11 @@ function irc:think()
 -- @return Table with fields <code>userinfo</code>, <code>node</code>, <code>channels</code> and <code>account</code>.
 function irc:whois(nick)
 
+--- Look up topic.
+-- Use this to invoke the hooks OnTopic and OnTopicInfo at any time.
+-- @param channel Channel to query.
+function irc:topic(channel)
+
 --- Send a raw line of IRC to the server.
 -- @param fmt Line to be sent, excluding newline characters.
 -- @param ... Format parameters for <code>fmt</code>, with <code>string.format</code> semantics.
@@ -113,6 +118,8 @@ function irc:shutdown()
 -- <li><code>OnQuit(user, message)</code></li>
 -- <li><code>NickChange(user, newnick, channel)</code>*†</li>
 -- <li><code>NameList(channel, names)</code></li>
+-- <li><code>OnTopic(channel, topic)</code></li>
+-- <li><code>OnTopicInfo(channel, creator, timeCreated)</code></li>
 -- </ul>
 -- * Event also invoked for yourself.
 -- † Channel passed only when user tracking is enabled
