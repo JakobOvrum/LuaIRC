@@ -163,7 +163,10 @@ end
 function meta:think()
 	while true do
 		local line = getline(self, 3)
-		if line then			self:handle(parse(line))
+		if line then
+			if not self:invoke("OnRaw", line) then
+				self:handle(parse(line))
+			end
 		else
 			break
 		end
@@ -288,7 +291,7 @@ end
 function meta:handle(prefix, cmd, params)
 	local handler = handlers[cmd]
 	if handler then
-			handler(self, prefix, unpack(params))
+		return handler(self, prefix, unpack(params))
 	end
 end
 
