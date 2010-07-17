@@ -11,30 +11,35 @@ function meta:send(fmt, ...)
 		return
 	end
 
-local function sendByMethod(self, method, target, msg)
-	local toChannel = table.concat({method, target, ":"}, " ")
-	for line in msg:gmatch("[^\r\n]+") do
-		self.socket:send(table.concat{toChannel, line, "\r\n"})
+	if err ~= "timeout" and err ~= "wantwrite" then
+		self:invoke("OnDisconnect", err, true)
+		self:shutdown()
+		error(err, errlevel)
 	end
 end
-	
+
+local function clean(str)
+	return str:gsub("[\r\n:]", "")
+end
+
 function meta:sendChat(target, msg)
-	sendByMethod(self, "PRIVMSG", target, msg)
+	self:send("PRIVMSG %s :%s", clean(target), clean(msg))
 end
 
 function meta:sendNotice(target, msg)
-	sendByMethod(self, "NOTICE", target, msg)
+	self:send("NOTICE %s :%s", clean(target), clean(msg))
 end
 
 function meta:join(channel, key)
 	if key then
-		self:send("JOIN %s :%s", channel, key)
+		self:send("JOIN %s :%s", clean(channel), clean(key))
 	else
-		self:send("JOIN %s", channel)
+		self:send("JOIN %s", clean(channel))
 	end
 end
 
 function meta:part(channel)
+	channel = clean(channel)
 	self:send("PART %s", channel)
 	if self.track_users then
 		self.channels[channel] = nil
@@ -65,5 +70,5 @@ function meta:setMode(t)
 		mode = table.concat{mode, "-", rem}
 	end
 	
-	self:send("MODE %s %s", target, mode)
+	self:send("MODE %s %s", clean(target), clean(mode))
 end
