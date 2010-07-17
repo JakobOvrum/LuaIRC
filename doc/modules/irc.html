@@ -113,6 +113,11 @@
 	</tr>
 
 	<tr>
+	<td class="name" nowrap><a href="#irc:topic">irc:topic</a>&nbsp;(channel)</td>
+	<td class="summary">Look up topic.</td>
+	</tr>
+
+	<tr>
 	<td class="name" nowrap><a href="#irc:trackUsers">irc:trackUsers</a>&nbsp;(b)</td>
 	<td class="summary">Turn user information tracking on or off.</td>
 	</tr>
@@ -459,6 +464,32 @@ Handle incoming data for <code>irc</code>, and invoke previously hooked callback
 
 
 
+<dt><a name="irc:topic"></a><strong>irc:topic</strong>&nbsp;(channel)</dt>
+<dd>
+Look up topic. Use this to invoke the hooks OnTopic and OnTopicInfo at any time.
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  channel: Channel to query.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
 <dt><a name="irc:trackUsers"></a><strong>irc:trackUsers</strong>&nbsp;(b)</dt>
 <dd>
 Turn user information tracking on or off. User tracking is enabled by default.
@@ -580,7 +611,7 @@ Returns a new <code>irc</code> object.
 <dl class="table">
 
 <dt><a name="Hooks"></a><strong>Hooks</strong></dt>
-<dd>List of hooks you can use with irc:hook. The parameter list describes the parameters passed to the callback function. <ul> <li><code>OnDisconnect(message, errorOccurred)</code></li> <li><code>OnChat(user, channel, message)</code></li> <li><code>OnNotice(user, channel, message)</code></li> <li><code>OnJoin(user, channel)</code>*</li> <li><code>OnPart(user, channel)</code>*</li> <li><code>OnQuit(user, message)</code></li> <li><code>NickChange(user, newnick)</code>*</li> <li><code>NameList(channel, names)</code></li> </ul> * Event also invoked for yourself.
+<dd>List of hooks you can use with irc:hook. The parameter list describes the parameters passed to the callback function. <ul> <li><code>OnDisconnect(message, errorOccurred)</code></li> <li><code>OnChat(user, channel, message)</code></li> <li><code>OnNotice(user, channel, message)</code></li> <li><code>OnJoin(user, channel)</code>*</li> <li><code>OnPart(user, channel)</code>*</li> <li><code>OnQuit(user, message)</code></li> <li><code>NickChange(user, newnick, channel)</code>*†</li> <li><code>NameList(channel, names)</code></li> <li><code>OnTopic(channel, topic)</code></li> <li><code>OnTopicInfo(channel, creator, timeCreated)</code></li> </ul> * Event also invoked for yourself. † Channel passed only when user tracking is enabled
 
 
 
