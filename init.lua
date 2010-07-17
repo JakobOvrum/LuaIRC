@@ -7,8 +7,7 @@ local unpack = unpack
 local pairs = pairs
 local assert = assert
 local require = require
-
-local print = print
+local tonumber = tonumber
 
 module "irc"
 
@@ -217,8 +216,23 @@ handlers["366"] = function(o, prefix, me, channel, msg)
 		 end
 end
 
+--no topic
+handlers["331"] = function(o, prefix, me, channel)
+		 o:invoke("OnTopic", channel, nil)
+end
+
+--new topic
 handlers["TOPIC"] = function(o, prefix, channel, topic)
-		 o:invoke("TopicChange", channel, topic)
+		 o:invoke("OnTopic", channel, topic)
+end
+
+handlers["332"] = function(o, prefix, me, channel, topic)
+		 o:invoke("OnTopic", channel, topic)
+end
+
+--topic creation info
+handlers["333"] = function(o, prefix, me, channel, nick, time)
+		 o:invoke("OnTopicInfo", channel, nick, tonumber(time))
 end
 
 handlers["ERROR"] = function(o, prefix, message)
@@ -272,3 +286,7 @@ function meta:whois(nick)
 
 	return result
 end
+function meta:topic(channel)
+	self:send("TOPIC %s", channel)
+end
+
