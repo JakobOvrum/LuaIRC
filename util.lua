@@ -9,23 +9,23 @@ module "irc"
 
 --protocol parsing
 function parse(line)
-    local prefix
+	local prefix
 	local lineStart = 1
-    if line:sub(1,1) == ":" then
-        local space = line:find(" ")
-        prefix = line:sub(2, space-1)
+	if line:sub(1,1) == ":" then
+		local space = line:find(" ")
+		prefix = line:sub(2, space-1)
 		lineStart = space
-    end
-    
-    local trailToken = line:find(":", lineStart)
+	end
+	
+	local trailToken = line:find(":", lineStart)
 	local lineStop = line:len()
-    local trailing
-    if trailToken then
-        trailing = line:sub(trailToken + 1)
+	local trailing
+	if trailToken then
+		trailing = line:sub(trailToken + 1)
 		lineStop = trailToken - 2
-    end
+	end
 
-    local params = {}
+	local params = {}
 
 	local _, cmdEnd, cmd = line:find("(%S+)", lineStart)
 	local pos = cmdEnd + 1
@@ -40,23 +40,23 @@ function parse(line)
 		params[#params + 1] = param
 	end
 
-    if trailing then 
-        params[#params + 1] = trailing 
-    end
+	if trailing then 
+		params[#params + 1] = trailing 
+	end
 
-    return prefix, cmd, params
+	return prefix, cmd, params
 end
 
 function parseNick(nick)
-		 return nick:match("^([%+@]?)(.+)$")
+	return nick:match("^([%+@]?)(.+)$")
 end
 
 function parsePrefix(prefix)
-         local user = {}
-         if prefix then
-            user.access, user.nick, user.username, user.host = prefix:match("^([%+@]?)(.+)!(.+)@(.+)$")
-         end
-         return user
+	local user = {}
+	if prefix then
+		user.access, user.nick, user.username, user.host = prefix:match("^([%+@]?)(.+)!(.+)@(.+)$")
+	end
+	return user
 end
 
 --mIRC markup scheme (de-facto standard)

@@ -14,7 +14,7 @@ local function sendByMethod(self, method, target, msg)
 		self.socket:send(table.concat{toChannel, line, "\r\n"})
 	end
 end
-
+	
 function meta:sendChat(target, msg)
 	sendByMethod(self, "PRIVMSG", target, msg)
 end
@@ -33,9 +33,9 @@ end
 
 function meta:part(channel)
 	self:send("PART %s", channel)
-    if self.track_users then
+	if self.track_users then
 		self.channels[channel] = nil
-    end
+	end
 end
 
 function meta:trackUsers(b)
