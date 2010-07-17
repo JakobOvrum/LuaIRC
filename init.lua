@@ -265,9 +265,8 @@ function meta:whois(nick)
 
 	if result.account then
 		result.account = result.account[3]
-	end
-
-	if result.registered then
+		
+	elseif result.registered then
 		result.account = result.registered[2]
 	end
 
