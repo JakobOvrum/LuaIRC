@@ -282,6 +282,18 @@ handlers["333"] = function(o, prefix, me, channel, nick, time)
 	o:invoke("OnTopicInfo", channel, nick, tonumber(time))
 end
 
+--RPL_UMODEIS
+--To answer a query about a client's own mode, RPL_UMODEIS is sent back
+handlers["221"] = function(o, modes)
+	o:invoke("OnUserModeIs", modes)
+end
+
+--RPL_CHANNELMODEIS
+--user seems to be just a repeat of the user's nick
+handlers["324"] = function(o, user, channel, modes)
+	o.invoke("OnChannelModeIs", user, channel, modes)
+end
+
 handlers["ERROR"] = function(o, prefix, message)
 	o:invoke("OnDisconnect", message, true)
 	o:shutdown()
