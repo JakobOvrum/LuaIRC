@@ -217,6 +217,10 @@ handlers["366"] = function(o, prefix, me, channel, msg)
 		 end
 end
 
+handlers["TOPIC"] = function(o, prefix, channel, topic)
+		 o:invoke("TopicChange", channel, topic)
+end
+
 handlers["ERROR"] = function(o, prefix, message)
          o:invoke("OnDisconnect", message, true)
          o:shutdown()
