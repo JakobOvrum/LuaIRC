@@ -5,8 +5,11 @@ module "irc"
 local meta = _META
 
 function meta:send(fmt, ...)
-	self.socket:send(fmt:format(...) .. "\r\n")
-end
+	local bytes, err = self.socket:send(fmt:format(...) .. "\r\n")
+
+	if bytes then
+		return
+	end
 
 local function sendByMethod(self, method, target, msg)
 	local toChannel = table.concat({method, target, ":"}, " ")

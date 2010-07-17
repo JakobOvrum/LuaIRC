@@ -8,6 +8,8 @@ local pairs = pairs
 local assert = assert
 local require = require
 local tonumber = tonumber
+local type = type
+local pcall = pcall
 
 module "irc"
 
@@ -62,20 +64,61 @@ function meta:invoke(name, ...)
 	local hooks = self.hooks[name]
 	if hooks then
 		for id,f in pairs(hooks) do
-			f(...)
+			if f(...) then
+				return true
+			end
 		end
 	end
 end
 
-function meta_preconnect:connect(server, port, timeout)
+function meta_preconnect:connect(_host, _port)
+	local host, port, password, secure, timeout
+
+	if type(_host) == "table" then
+		host = _host.host
+		port = _host.port
+		timeout = _host.timeout
+		password = _host.password
+		secure = _host.secure
+	else
+		host = _host
+		port = _port
+	end
+
+	host = host or error("host name required to connect", 2)
 	port = port or 6667
 
 	local s = socket.tcp()
-	self.socket = s
+
 	s:settimeout(timeout or 30)
-	assert(s:connect(server, port))
-	
+	assert(s:connect(host, port))
+
+	if secure then
+		local work, ssl = pcall(require, "ssl")
+		if not work then
+			error("LuaSec required for secure connections", 2)
+		end
+
+		local params
+		if type(secure) == "table" then
+			params = secure
+		else
+			params = {mode="client", protocol="tlsv1"}
+		end
+
+		s = ssl.wrap(s, params)
+		success, errmsg = s:dohandshake()
+		if not success then
+			error(("could not make secure connection %s"):format(errmsg), 2)
+		end
+	end
+
+	self.socket = s
 	setmetatable(self, meta)
+
+	if password then
+		self:send("PASS %s", password)
+	end
 
 	self:send("USER %s 0 * :%s", self.username, self.realname)
 	self:send("NICK %s", self.nick)
@@ -83,7 +126,7 @@ function meta_preconnect:connect(server, port, timeout)
 	self.channels = {}
 
 	s:settimeout(0)
-	
+
 	repeat
 		self:think()
 	until self.authed
@@ -99,21 +142,22 @@ function meta:disconnect(message)
 end
 
 function meta:shutdown()
-	self.socket:shutdown()
 	self.socket:close()
 	setmetatable(self, nil)
 end
 
 local function getline(self, errlevel)
-	line, err = self.socket:receive("*l")
-	
-	if not line and err ~= "timeout" then
-		self:invoke("OnDisconnect", err, true)			
-		self:shutdown()
+	local line, err = self.socket:receive("*l")
+
+	if line then
+		return line
+	end
+
+	if err ~= "timeout" and err ~= "wantread" then
+		self:invoke("OnDisconnect", err, true)
+		self:close()
 		error(err, errlevel)
 	end
-	
-	return line
 end
 
 function meta:think()
@@ -259,7 +303,7 @@ local whoisHandlers = {
 	["330"] = "account"; -- Freenode
 	["307"] = "registered"; -- Unreal
 }
-	
+
 function meta:whois(nick)
 	self:send("WHOIS %s", nick)
 
@@ -290,6 +334,7 @@ function meta:whois(nick)
 
 	return result
 end
+
 function meta:topic(channel)
 	self:send("TOPIC %s", channel)
 end
