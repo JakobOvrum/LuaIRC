@@ -16,7 +16,7 @@ function parse(line)
 		prefix = line:sub(2, space-1)
 		lineStart = space
 	end
-	
+
 	local _, trailToken = line:find("%s+:", lineStart)
 	local lineStop = line:len()
 	local trailing

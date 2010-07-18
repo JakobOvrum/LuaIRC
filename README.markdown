@@ -8,6 +8,10 @@ Dependencies
 
  * [LuaSocket](http://w3.impa.br/~diego/software/luasocket/)
 
+**Only required if you want to make use of the TLS support**
+
+ * [LuaSec](http://www.inf.puc-rio.br/~brunoos/luasec/)
+
 Documentation
 -------------
 Documentation can be automatically generated from the doc/irc.luadoc file, pre-generated documentation can be found in the gh-branch.
