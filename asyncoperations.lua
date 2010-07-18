@@ -29,27 +29,27 @@ end
 function meta:sendChat(target, msg)
 	-- Split the message into segments if it includes newlines.
 	for line in msg:gmatch("([^\r\n]+)")
-		self:send("PRIVMSG %s :%s", verify(target, 2), msg)
+		self:send("PRIVMSG %s :%s", verify(target, 3), msg)
 	end
 end
 
 function meta:sendNotice(target, msg)
 	-- Split the message into segments if it includes newlines.
 	for line in msg:gmatch("([^\r\n]+)")
-		self:send("NOTICE %s :%s", verify(target, 2), msg)
+		self:send("NOTICE %s :%s", verify(target, 3), msg)
 	end
 end
 
 function meta:join(channel, key)
 	if key then
-		self:send("JOIN %s :%s", verify(channel, 2), verify(key, 2))
+		self:send("JOIN %s :%s", verify(channel, 3), verify(key, 3))
 	else
-		self:send("JOIN %s", verify(channel, 2))
+		self:send("JOIN %s", verify(channel, 3))
 	end
 end
 
 function meta:part(channel)
-	channel = verify(channel, 2)
+	channel = verify(channel, 3)
 	self:send("PART %s", channel)
 	if self.track_users then
 		self.channels[channel] = nil
@@ -80,5 +80,5 @@ function meta:setMode(t)
 		mode = table.concat{mode, "-", rem}
 	end
 
-	self:send("MODE %s %s", verify(target, 2), verify(mode, 2))
+	self:send("MODE %s %s", verify(target, 3), verify(mode, 3))
 end
