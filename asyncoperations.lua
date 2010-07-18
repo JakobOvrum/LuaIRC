@@ -23,11 +23,17 @@ local function clean(str)
 end
 
 function meta:sendChat(target, msg)
-	self:send("PRIVMSG %s :%s", clean(target), clean(msg))
+	-- Split the message into segments if it includes newlines.
+	for line in msg:gmatch("([^\r\n]+)")
+		self:send("PRIVMSG %s :%s", clean(target), msg)
+	end
 end
 
 function meta:sendNotice(target, msg)
-	self:send("NOTICE %s :%s", clean(target), clean(msg))
+	-- Split the message into segments if it includes newlines.
+	for line in msg:gmatch("([^\r\n]+)")
+		self:send("NOTICE %s :%s", clean(target), msg)
+	end
 end
 
 function meta:join(channel, key)
