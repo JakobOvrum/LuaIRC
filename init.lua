@@ -293,9 +293,9 @@ handlers["221"] = function(o, prefix, modes)
 end
 
 --RPL_CHANNELMODEIS
---user seems to be just a repeat of the user's nick
+--The result from common irc servers differs from that defined by the rfc
 handlers["324"] = function(o, prefix, user, channel, modes)
-	o.invoke("OnChannelModeIs", user, channel, modes)
+	o:invoke("OnChannelModeIs", user, channel, modes)
 end
 
 handlers["ERROR"] = function(o, prefix, message)
