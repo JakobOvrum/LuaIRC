@@ -18,34 +18,38 @@ function meta:send(fmt, ...)
 	end
 end
 
-local function clean(str)
-	return str:gsub("[\r\n:]", "")
+local function verify(str, errLevel)
+	if str:find("^:") or find("%s%z") then
+		error(("bad characters in '%s'"):format(str), errLevel)
+	end
+
+	return str
 end
 
 function meta:sendChat(target, msg)
 	-- Split the message into segments if it includes newlines.
 	for line in msg:gmatch("([^\r\n]+)")
-		self:send("PRIVMSG %s :%s", clean(target), msg)
+		self:send("PRIVMSG %s :%s", verify(target, 2), msg)
 	end
 end
 
 function meta:sendNotice(target, msg)
 	-- Split the message into segments if it includes newlines.
 	for line in msg:gmatch("([^\r\n]+)")
-		self:send("NOTICE %s :%s", clean(target), msg)
+		self:send("NOTICE %s :%s", verify(target, 2), msg)
 	end
 end
 
 function meta:join(channel, key)
 	if key then
-		self:send("JOIN %s :%s", clean(channel), clean(key))
+		self:send("JOIN %s :%s", verify(channel, 2), verify(key, 2))
 	else
-		self:send("JOIN %s", clean(channel))
+		self:send("JOIN %s", verify(channel, 2))
 	end
 end
 
 function meta:part(channel)
-	channel = clean(channel)
+	channel = verify(channel, 2)
 	self:send("PART %s", channel)
 	if self.track_users then
 		self.channels[channel] = nil
@@ -76,5 +80,5 @@ function meta:setMode(t)
 		mode = table.concat{mode, "-", rem}
 	end
 	
-	self:send("MODE %s %s", clean(target), clean(mode))
+	self:send("MODE %s %s", verify(target, 2), verify(mode, 2))
 end
