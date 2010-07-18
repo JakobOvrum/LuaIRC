@@ -17,7 +17,7 @@ function parse(line)
 		lineStart = space
 	end
 
-	local trailToken = line:find(":", lineStart)
+	local _, trailToken = line:find("%s+:", lineStart)
 	local lineStop = line:len()
 	local trailing
 	if trailToken then

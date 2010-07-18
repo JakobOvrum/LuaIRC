@@ -282,16 +282,20 @@ handlers["333"] = function(o, prefix, me, channel, nick, time)
 	o:invoke("OnTopicInfo", channel, nick, tonumber(time))
 end
 
+handlers["KICK"] = function(o, prefix, channel, kicked, reason)
+	o:invoke("OnKick", channel, kicked, parsePrefix(prefix), reason)
+end
+
 --RPL_UMODEIS
 --To answer a query about a client's own mode, RPL_UMODEIS is sent back
 handlers["221"] = function(o, prefix, modes)
-	o:invoke("OnUserModeIs", parsePrefix(prefix), modes)
+	o:invoke("OnUserModeIs", modes)
 end
 
 --RPL_CHANNELMODEIS
 --user seems to be just a repeat of the user's nick
 handlers["324"] = function(o, prefix, user, channel, modes)
-	o.invoke("OnChannelModeIs", parsePrefix(prefix), user, channel, modes)
+	o.invoke("OnChannelModeIs", user, channel, modes)
 end
 
 handlers["ERROR"] = function(o, prefix, message)
@@ -348,4 +352,3 @@ end
 function meta:topic(channel)
 	self:send("TOPIC %s", channel)
 end
-

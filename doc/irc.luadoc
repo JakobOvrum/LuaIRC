@@ -120,6 +120,7 @@ function irc:shutdown()
 -- <li><code>NameList(channel, names)</code></li>
 -- <li><code>OnTopic(channel, topic)</code></li>
 -- <li><code>OnTopicInfo(channel, creator, timeCreated)</code></li>
+-- <li><code>OnKick(channel, nick, kicker, reason)</code>* (kicker is a <code>user</code> table)</li>
 -- </ul>
 -- * Event also invoked for yourself.
 -- † Channel passed only when user tracking is enabled
