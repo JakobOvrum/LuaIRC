@@ -20,7 +20,7 @@ end
 
 local function verify(str, errLevel)
 	if str:find("^:") or find("%s%z") then
-		error(("bad characters in '%s'"):format(str), errLevel)
+		error(("malformed parameter '%s' to irc command"):format(str), errLevel)
 	end
 
 	return str
