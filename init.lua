@@ -29,7 +29,7 @@ function meta_preconnect.__index(o, k)
 	end
 	return v
 end
-	
+
 function new(user)
 	local o = {
 		nick = assert(user.nick, "Field 'nick' is required");
@@ -55,7 +55,7 @@ function meta:unhook(name, id)
 
 	assert(hooks, "no hooks exist for this event")
 	assert(hooks[id], "hook ID not found")
-		
+
 	hooks[id] = nil
 end
 meta_preconnect.unhook = meta.unhook
@@ -284,14 +284,14 @@ end
 
 --RPL_UMODEIS
 --To answer a query about a client's own mode, RPL_UMODEIS is sent back
-handlers["221"] = function(o, modes)
-	o:invoke("OnUserModeIs", modes)
+handlers["221"] = function(o, prefix, modes)
+	o:invoke("OnUserModeIs", parsePrefix(prefix), modes)
 end
 
 --RPL_CHANNELMODEIS
 --user seems to be just a repeat of the user's nick
-handlers["324"] = function(o, user, channel, modes)
-	o.invoke("OnChannelModeIs", user, channel, modes)
+handlers["324"] = function(o, prefix, user, channel, modes)
+	o.invoke("OnChannelModeIs", parsePrefix(prefix), user, channel, modes)
 end
 
 handlers["ERROR"] = function(o, prefix, message)
