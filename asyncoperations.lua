@@ -19,7 +19,7 @@ function meta:send(fmt, ...)
 end
 
 local function verify(str, errLevel)
-	if str:find("^:") or find("%s%z") then
+	if str:find("^:") or str:find("%s%z") then
 		error(("malformed parameter '%s' to irc command"):format(str), errLevel)
 	end
 
@@ -28,14 +28,14 @@ end
 
 function meta:sendChat(target, msg)
 	-- Split the message into segments if it includes newlines.
-	for line in msg:gmatch("([^\r\n]+)")
+	for line in msg:gmatch("([^\r\n]+)") do
 		self:send("PRIVMSG %s :%s", verify(target, 3), msg)
 	end
 end
 
 function meta:sendNotice(target, msg)
 	-- Split the message into segments if it includes newlines.
-	for line in msg:gmatch("([^\r\n]+)")
+	for line in msg:gmatch("([^\r\n]+)") do
 		self:send("NOTICE %s :%s", verify(target, 3), msg)
 	end
 end
