@@ -103,13 +103,13 @@ function meta_preconnect:connect(_host, _port)
 		if type(secure) == "table" then
 			params = secure
 		else
-			params = {mode="client", protocol="tlsv1"}
+			params = {mode = "client", protocol = "tlsv1"}
 		end
 
 		s = ssl.wrap(s, params)
 		success, errmsg = s:dohandshake()
 		if not success then
-			error(("could not make secure connection %s"):format(errmsg), 2)
+			error(("could not make secure connection: %s"):format(errmsg), 2)
 		end
 	end
 
@@ -133,7 +133,7 @@ function meta_preconnect:connect(_host, _port)
 end
 
 function meta:disconnect(message)
-	local message = message or "Bye!"
+	message = message or "Bye!"
 
 	self:invoke("OnDisconnect", message, false)
 	self:send("QUIT :%s", message)
