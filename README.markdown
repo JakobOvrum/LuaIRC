@@ -8,7 +8,7 @@ Dependencies
 
  * [LuaSocket](http://w3.impa.br/~diego/software/luasocket/)
 
-**Required for TLS/SSL support**
+**Only required if you want to make use of the TLS support**
 
  * [LuaSec](http://www.inf.puc-rio.br/~brunoos/luasec/)
 
