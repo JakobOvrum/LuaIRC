@@ -235,6 +235,10 @@ handlers["333"] = function(o, prefix, me, channel, nick, time)
 	o:invoke("OnTopicInfo", channel, nick, tonumber(time))
 end
 
+handlers["KICK"] = function(o, prefix, channel, kicked, reason)
+	o:invoke("OnKick", channel, kicked, parsePrefix(prefix), reason)
+end
+
 handlers["ERROR"] = function(o, prefix, message)
 	o:invoke("OnDisconnect", message, true)
 	o:shutdown()
