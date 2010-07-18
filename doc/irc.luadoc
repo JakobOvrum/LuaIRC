@@ -44,10 +44,13 @@ function irc:hook(name, id, f)
 function irc:unhook(name, id)
 
 --- Connect <code>irc</code> to an IRC server.
--- @param server Server address.
+-- @param host Host address.
 -- @param port Server port. [default 6667]
--- @param timeout Connection timeout value in seconds. [default 30]
-function irc:connect(server, port, timeout)
+function irc:connect(server, port)
+
+-- @param table Table of connection details
+-- @see Connection
+function irc:connect(table)
 
 --- Disconnect <code>irc</code> from the server.
 -- @param message Quit message.
@@ -108,8 +111,21 @@ function irc:invoke(name, ...)
 function irc:handle(prefix, cmd, params)
 function irc:shutdown()
 
+--- Table with connection information.
+-- <ul>
+-- <li><code>host</code> - Server host name.</li>
+-- <li><code>port</code> - Server port. [defaults to <code>6667</code>]</li>
+-- <li><code>timeout</code> - Connect timeout. [defaults to <code>30</code>]</li>
+-- <li><code>password</code> - Server password.</li>
+-- <li><code>secure</code> - Boolean to enable TLS connection, pass a params table (described, [luasec]) to control</li>
+-- </ul>
+-- [luasec]: http://www.inf.puc-rio.br/~brunoos/luasec/reference.html
+-- @name Connection
+-- @class table
+
 --- List of hooks you can use with irc:hook. The parameter list describes the parameters passed to the callback function.
 -- <ul>
+-- <li><code>OnRaw(line) - (any non false/nil return value assumes line handled and will not be further processed)</code></li>
 -- <li><code>OnDisconnect(message, errorOccurred)</code></li>
 -- <li><code>OnChat(user, channel, message)</code></li>
 -- <li><code>OnNotice(user, channel, message)</code></li>
@@ -121,6 +137,8 @@ function irc:shutdown()
 -- <li><code>OnTopic(channel, topic)</code></li>
 -- <li><code>OnTopicInfo(channel, creator, timeCreated)</code></li>
 -- <li><code>OnKick(channel, nick, kicker, reason)</code>* (kicker is a <code>user</code> table)</li>
+-- <li><code>OnUserModeIs(modes)</code></li>
+-- <li><code>OnChannelModeIs(user, channel, modes)</code></li>
 -- </ul>
 -- * Event also invoked for yourself.
 -- † Channel passed only when user tracking is enabled
