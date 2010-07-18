@@ -23,7 +23,7 @@ require "irc.asyncoperations"
 local meta_preconnect = {}
 function meta_preconnect.__index(o, k)
 	local v = rawget(meta_preconnect, k)
-	
+
 	if not v and meta[k] then
 		error("field '"..k.."' is not accessible before connecting", 2)
 	end
@@ -134,7 +134,7 @@ end
 
 function meta:disconnect(message)
 	local message = message or "Bye!"
-	
+
 	self:invoke("OnDisconnect", message, false)
 	self:send("QUIT :%s", message)
 
@@ -200,7 +200,7 @@ handlers["JOIN"] = function(o, prefix, channel)
 			o.channels[channel].users[user.nick] = user
 		end
 	end
-	
+
 	o:invoke("OnJoin", user, channel)
 end
 
@@ -247,7 +247,7 @@ end
 handlers["353"] = function(o, prefix, me, chanType, channel, names)
 	if o.track_users then
 		o.channels[channel] = o.channels[channel] or {users = {}, type = chanType}
-		
+
 		local users = o.channels[channel].users
 		for nick in names:gmatch("(%S+)") do
 			local access, name = parseNick(nick)
@@ -319,7 +319,7 @@ function meta:whois(nick)
 	self:send("WHOIS %s", nick)
 
 	local result = {}
-	
+
 	while true do
 		local line = getline(self, 3)
 		if line then
@@ -338,7 +338,6 @@ function meta:whois(nick)
 
 	if result.account then
 		result.account = result.account[3]
-		
 	elseif result.registered then
 		result.account = result.registered[2]
 	end
