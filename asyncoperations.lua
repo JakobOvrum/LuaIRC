@@ -19,7 +19,7 @@ function meta:send(fmt, ...)
 end
 
 local function verify(str, errLevel)
-	if str:find("^:") or find("%s%z") then
+	if str:find("^:") or str:find("%s%z") then
 		error(("malformed parameter '%s' to irc command"):format(str), errLevel)
 	end
 
