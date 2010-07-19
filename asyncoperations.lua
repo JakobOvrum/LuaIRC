@@ -29,14 +29,14 @@ end
 function meta:sendChat(target, msg)
 	-- Split the message into segments if it includes newlines.
 	for line in msg:gmatch("([^\r\n]+)") do
-		self:send("PRIVMSG %s :%s", verify(target, 3), msg)
+		self:send("PRIVMSG %s :%s", verify(target, 3), line)
 	end
 end
 
 function meta:sendNotice(target, msg)
 	-- Split the message into segments if it includes newlines.
 	for line in msg:gmatch("([^\r\n]+)") do
-		self:send("NOTICE %s :%s", verify(target, 3), msg)
+		self:send("NOTICE %s :%s", verify(target, 3), line)
 	end
 end
 
