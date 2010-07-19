@@ -7,11 +7,7 @@ local meta = _META
 function meta:send(fmt, ...)
 	local bytes, err = self.socket:send(fmt:format(...) .. "\r\n")
 
-	if bytes then
-		return
-	end
-
-	if err ~= "timeout" and err ~= "wantwrite" then
+	if not bytes and err ~= "timeout" and err ~= "wantwrite" then
 		self:invoke("OnDisconnect", err, true)
 		self:shutdown()
 		error(err, errlevel)
@@ -73,12 +69,12 @@ function meta:setMode(t)
 	assert(add or rem, "table contains neither 'add' nor 'remove'")
 
 	if add then
-		mode = table.concat{"+", add}
+		mode = table.concat{"+", verify(add, 3)}
 	end
 
 	if rem then
-		mode = table.concat{mode, "-", rem}
+		mode = table.concat{mode, "-", verify(rem, 3)}
 	end
 
-	self:send("MODE %s %s", verify(target, 3), verify(mode, 3))
+	self:send("MODE %s %s", verify(target, 3), mode)
 end
