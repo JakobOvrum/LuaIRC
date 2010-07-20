@@ -14,7 +14,7 @@ Dependencies
 
 Documentation
 -------------
-Documentation can be automatically generated from the doc/irc.luadoc file, pre-generated documentation can be found in the gh-branch.
+Documentation can be automatically generated from the doc/irc.luadoc file, pre-generated documentation can be found in the 'gh-pages' branch.
 
 You can also browse it [online](http://jakobovrum.github.com/LuaIRC/doc/modules/irc.html).
 
