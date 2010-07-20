@@ -298,6 +298,10 @@ handlers["324"] = function(o, prefix, user, channel, modes)
 	o:invoke("OnChannelModeIs", channel, modes)
 end
 
+handlers["MODE"] = function(o, prefix, target, modes)
+	o:invoke("OnModeChange", parsePrefix(prefix), target, modes)
+end
+
 handlers["ERROR"] = function(o, prefix, message)
 	o:invoke("OnDisconnect", message, true)
 	o:shutdown()
