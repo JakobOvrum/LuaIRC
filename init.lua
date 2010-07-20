@@ -120,8 +120,8 @@ function meta_preconnect:connect(_host, _port)
 		self:send("PASS %s", password)
 	end
 
-	self:send("USER %s 0 * :%s", self.username, self.realname)
 	self:send("NICK %s", self.nick)
+	self:send("USER %s 0 * :%s", self.username, self.realname)
 
 	self.channels = {}
 
