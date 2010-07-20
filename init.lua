@@ -155,7 +155,7 @@ local function getline(self, errlevel)
 
 	if err ~= "timeout" and err ~= "wantread" then
 		self:invoke("OnDisconnect", err, true)
-		self:close()
+		self:shutdown()
 		error(err, errlevel)
 	end
 end
