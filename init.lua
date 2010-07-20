@@ -149,15 +149,13 @@ end
 local function getline(self, errlevel)
 	local line, err = self.socket:receive("*l")
 
-	if line then
-		return line
-	end
-
-	if err ~= "timeout" and err ~= "wantread" then
+	if not line and err ~= "timeout" and err ~= "wantread" then
 		self:invoke("OnDisconnect", err, true)
 		self:shutdown()
 		error(err, errlevel)
 	end
+
+	return line
 end
 
 function meta:think()
