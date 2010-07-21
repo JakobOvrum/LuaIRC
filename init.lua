@@ -287,13 +287,13 @@ end
 --RPL_UMODEIS
 --To answer a query about a client's own mode, RPL_UMODEIS is sent back
 handlers["221"] = function(o, prefix, user, modes)
-	o:invoke("OnUserModeIs", modes)
+	o:invoke("OnUserMode", modes)
 end
 
 --RPL_CHANNELMODEIS
 --The result from common irc servers differs from that defined by the rfc
 handlers["324"] = function(o, prefix, user, channel, modes)
-	o:invoke("OnChannelModeIs", channel, modes)
+	o:invoke("OnChannelMode", channel, modes)
 end
 
 handlers["MODE"] = function(o, prefix, target, modes)
