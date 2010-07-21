@@ -120,8 +120,8 @@ function meta_preconnect:connect(_host, _port)
 		self:send("PASS %s", password)
 	end
 
-	self:send("USER %s 0 * :%s", self.username, self.realname)
 	self:send("NICK %s", self.nick)
+	self:send("USER %s 0 * :%s", self.username, self.realname)
 
 	self.channels = {}
 
@@ -149,15 +149,13 @@ end
 local function getline(self, errlevel)
 	local line, err = self.socket:receive("*l")
 
-	if line then
-		return line
-	end
-
-	if err ~= "timeout" and err ~= "wantread" then
+	if not line and err ~= "timeout" and err ~= "wantread" then
 		self:invoke("OnDisconnect", err, true)
-		self:close()
+		self:shutdown()
 		error(err, errlevel)
 	end
+
+	return line
 end
 
 function meta:think()
@@ -288,14 +286,18 @@ end
 
 --RPL_UMODEIS
 --To answer a query about a client's own mode, RPL_UMODEIS is sent back
-handlers["221"] = function(o, prefix, modes)
+handlers["221"] = function(o, prefix, user, modes)
 	o:invoke("OnUserModeIs", modes)
 end
 
 --RPL_CHANNELMODEIS
 --The result from common irc servers differs from that defined by the rfc
 handlers["324"] = function(o, prefix, user, channel, modes)
-	o:invoke("OnChannelModeIs", user, channel, modes)
+	o:invoke("OnChannelModeIs", channel, modes)
+end
+
+handlers["MODE"] = function(o, prefix, target, modes)
+	o:invoke("OnModeChange", parsePrefix(prefix), target, modes)
 end
 
 handlers["ERROR"] = function(o, prefix, message)
