@@ -1,4 +1,5 @@
 local table = table
+local assert = assert
 
 module "irc"
 
