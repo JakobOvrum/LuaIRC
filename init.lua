@@ -162,7 +162,7 @@ end
 function meta:think()
 	while true do
 		local line = getline(self, 3)
-		if line then
+		if line and #line > 0 then
 			if not self:invoke("OnRaw", line) then
 				self:handle(parse(line))
 			end
