@@ -10,8 +10,9 @@ handlers["PING"] = function(o, prefix, query)
 	o:send("PONG :%s", query)
 end
 
-handlers["001"] = function(o)
+handlers["001"] = function(o, prefix, me)
 	o.authed = true
+	o.nick = me
 end
 
 handlers["PRIVMSG"] = function(o, prefix, channel, message)
