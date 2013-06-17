@@ -71,9 +71,9 @@ function irc:whois(nick)
 function irc:topic(channel)
 
 --- Send a raw line of IRC to the server.
--- @param fmt Line to be sent, excluding newline characters.
--- @param ... Format parameters for <code>fmt</code>, with <code>string.format</code> semantics.
-function irc:send(fmt, ...)
+-- @param msg Line to be sent, excluding newline characters.
+-- @param ... Format parameters for <code>msg</code>, with <code>string.format</code> semantics. [optional]
+function irc:send(msg, ...)
 
 --- Send a message to a channel or user.
 -- @param target Nick or channel to send to.

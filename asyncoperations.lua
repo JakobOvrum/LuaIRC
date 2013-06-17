@@ -1,12 +1,16 @@
 local table = table
 local assert = assert
+local select = select
 
 module "irc"
 
 local meta = _META
 
-function meta:send(fmt, ...)
-	local bytes, err = self.socket:send(fmt:format(...) .. "\r\n")
+function meta:send(msg, ...)
+	if select("#", ...) > 0 then
+		msg = msg:format(...)
+	end
+	local bytes, err = self.socket:send(msg .. "\r\n")
 
 	if not bytes and err ~= "timeout" and err ~= "wantwrite" then
 		self:invoke("OnDisconnect", err, true)

@@ -26,7 +26,7 @@ function meta_preconnect.__index(o, k)
 	local v = rawget(meta_preconnect, k)
 
 	if not v and meta[k] then
-		error("field '"..k.."' is not accessible before connecting", 2)
+		error(("field '%s' is not accessible before connecting"):format(k), 2)
 	end
 	return v
 end
