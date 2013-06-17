@@ -116,6 +116,9 @@ function meta_preconnect:connect(_host, _port)
 
 	self.socket = s
 	setmetatable(self, meta)
+	
+	self:invoke("PreRegister", self)
+	self:send("CAP END")
 
 	if password then
 		self:send("PASS %s", password)

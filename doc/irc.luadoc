@@ -125,6 +125,7 @@ function irc:shutdown()
 
 --- List of hooks you can use with irc:hook. The parameter list describes the parameters passed to the callback function.
 -- <ul>
+-- <li><code>PreRegister(connection)</code>Useful for CAP commands and SASL.</li>
 -- <li><code>OnRaw(line) - (any non false/nil return value assumes line handled and will not be further processed)</code></li>
 -- <li><code>OnDisconnect(message, errorOccurred)</code></li>
 -- <li><code>OnChat(user, channel, message)</code></li>
