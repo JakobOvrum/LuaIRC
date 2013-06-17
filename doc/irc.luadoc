@@ -141,7 +141,7 @@ function irc:shutdown()
 -- <li><code>OnKick(channel, nick, kicker, reason)</code>* (kicker is a <code>user</code> table)</li>
 -- <li><code>OnUserMode(modes)</code></li>
 -- <li><code>OnChannelMode(user, channel, modes)</code></li>
--- <li><code>OnModeChange(user, target, modes)</code>*</li>
+-- <li><code>OnModeChange(user, target, modes, ...)</code>* ('...' contains mode options such as banmasks)</li>
 -- </ul>
 -- * Event also invoked for yourself.
 -- † Channel passed only when user tracking is enabled
