@@ -127,6 +127,7 @@ function irc:shutdown()
 -- <ul>
 -- <li><code>PreRegister(connection)</code>Useful for CAP commands and SASL.</li>
 -- <li><code>OnRaw(line) - (any non false/nil return value assumes line handled and will not be further processed)</code></li>
+-- <li><code>OnSend(line)</code></li>
 -- <li><code>OnDisconnect(message, errorOccurred)</code></li>
 -- <li><code>OnChat(user, channel, message)</code></li>
 -- <li><code>OnNotice(user, channel, message)</code></li>

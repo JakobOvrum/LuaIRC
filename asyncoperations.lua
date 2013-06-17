@@ -10,6 +10,8 @@ function meta:send(msg, ...)
 	if select("#", ...) > 0 then
 		msg = msg:format(...)
 	end
+	self:invoke("OnSend", msg)
+
 	local bytes, err = self.socket:send(msg .. "\r\n")
 
 	if not bytes and err ~= "timeout" and err ~= "wantwrite" then
