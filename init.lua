@@ -116,7 +116,9 @@ function meta_preconnect:connect(_host, _port)
 
 	self.socket = s
 	setmetatable(self, meta)
-	
+
+	self:send("CAP REQ multi-prefix")
+
 	self:invoke("PreRegister", self)
 	self:send("CAP END")
 
