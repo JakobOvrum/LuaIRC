@@ -71,9 +71,9 @@ function irc:whois(nick)
 function irc:topic(channel)
 
 --- Send a raw line of IRC to the server.
--- @param fmt Line to be sent, excluding newline characters.
--- @param ... Format parameters for <code>fmt</code>, with <code>string.format</code> semantics.
-function irc:send(fmt, ...)
+-- @param msg Line to be sent, excluding newline characters.
+-- @param ... Format parameters for <code>msg</code>, with <code>string.format</code> semantics. [optional]
+function irc:send(msg, ...)
 
 --- Send a message to a channel or user.
 -- @param target Nick or channel to send to.
@@ -125,7 +125,9 @@ function irc:shutdown()
 
 --- List of hooks you can use with irc:hook. The parameter list describes the parameters passed to the callback function.
 -- <ul>
+-- <li><code>PreRegister(connection)</code>Useful for CAP commands and SASL.</li>
 -- <li><code>OnRaw(line) - (any non false/nil return value assumes line handled and will not be further processed)</code></li>
+-- <li><code>OnSend(line)</code></li>
 -- <li><code>OnDisconnect(message, errorOccurred)</code></li>
 -- <li><code>OnChat(user, channel, message)</code></li>
 -- <li><code>OnNotice(user, channel, message)</code></li>
@@ -139,7 +141,7 @@ function irc:shutdown()
 -- <li><code>OnKick(channel, nick, kicker, reason)</code>* (kicker is a <code>user</code> table)</li>
 -- <li><code>OnUserMode(modes)</code></li>
 -- <li><code>OnChannelMode(user, channel, modes)</code></li>
--- <li><code>OnModeChange(user, target, modes)</code>*</li>
+-- <li><code>OnModeChange(user, target, modes, ...)</code>* ('...' contains mode options such as banmasks)</li>
 -- </ul>
 -- * Event also invoked for yourself.
 -- † Channel passed only when user tracking is enabled
@@ -152,7 +154,7 @@ function irc:shutdown()
 -- <li><code>username</code> - User username.</li>
 -- <li><code>host</code> - User hostname.</li>
 -- <li><code>realname</code> - User real name.</li>
--- <li><code>access</code> - User access, available in channel-oriented callbacks. Can be '+', '@', and others, depending on the server.</li>
+-- <li><code>access</code> - User access, available in channel-oriented callbacks. A table containing the boolean fields 'op', 'halfop', and 'voice'.</li>
 -- </ul>
 -- Apart from <code>nick</code>, fields may be missing. To fill them in, enable user tracking and use irc:whois.
 -- @name User
