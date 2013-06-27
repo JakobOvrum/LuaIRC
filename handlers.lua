@@ -1,6 +1,7 @@
 local pairs = pairs
 local error = error
 local tonumber = tonumber
+local table = table
 
 module "irc"
 
@@ -83,7 +84,7 @@ handlers["353"] = function(o, prefix, me, chanType, channel, names)
 		local users = o.channels[channel].users
 		for nick in names:gmatch("(%S+)") do
 			local access, name = parseNick(nick)
-			users[name] = {type = access}
+			users[name] = {access = access}
 		end
 	end
 end
@@ -130,8 +131,26 @@ handlers["324"] = function(o, prefix, user, channel, modes)
 	o:invoke("OnChannelMode", channel, modes)
 end
 
-handlers["MODE"] = function(o, prefix, target, modes)
-	o:invoke("OnModeChange", parsePrefix(prefix), target, modes)
+handlers["MODE"] = function(o, prefix, target, modes, ...)
+	if o.track_users and target ~= o.nick then
+		local add = true
+		local optList = {...}
+		for c in modes:gmatch(".") do
+			if     c == "+" then add = true
+			elseif c == "-" then add = false
+			elseif c == "o" then
+				local user = table.remove(optList, 1)
+				o.channels[target].users[user].access.op = add
+			elseif c == "h" then
+				local user = table.remove(optList, 1)
+				o.channels[target].users[user].access.halfop = add
+			elseif c == "v" then
+				local user = table.remove(optList, 1)
+				o.channels[target].users[user].access.voice = add
+			end
+		end
+	end
+	o:invoke("OnModeChange", parsePrefix(prefix), target, modes, ...)
 end
 
 handlers["ERROR"] = function(o, prefix, message)
