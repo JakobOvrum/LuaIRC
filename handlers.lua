@@ -74,6 +74,9 @@ handlers["NICK"] = function(o, prefix, newnick)
 	else
 		o:invoke("NickChange", user, newnick)
 	end
+	if user.nick == o.nick then
+		o.nick = newnick
+	end
 end
 
 --NAMES list
