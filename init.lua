@@ -31,14 +31,16 @@ function meta_preconnect.__index(o, k)
 	return v
 end
 
-function new(user)
+function new(data)
 	local o = {
-		nick = assert(user.nick, "Field 'nick' is required");
-		username = user.username or "lua";
-		realname = user.realname or "Lua owns";
+		nick = assert(data.nick, "Field 'nick' is required");
+		username = data.username or "lua";
+		realname = data.realname or "Lua owns";
+		nickGenerator = data.nickGenerator or defaultNickGenerator;
 		hooks = {};
 		track_users = true;
 	}
+	assert(checkNick(o.nick), "Erroneous nickname passed to irc.new")
 	return setmetatable(o, meta_preconnect)
 end
 
