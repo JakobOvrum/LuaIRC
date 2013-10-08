@@ -66,8 +66,8 @@ meta_preconnect.unhook = meta.unhook
 function meta:invoke(name, ...)
 	local hooks = self.hooks[name]
 	if hooks then
-		for id,f in pairs(hooks) do
-			if f(...) then
+		for id, f in pairs(hooks) do
+			if f(self, ...) then
 				return true
 			end
 		end
