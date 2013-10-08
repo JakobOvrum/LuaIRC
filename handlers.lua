@@ -79,6 +79,17 @@ handlers["NICK"] = function(o, prefix, newnick)
 	end
 end
 
+local function needNewNick(o, prefix, target, badnick)
+	local newnick = o.nickGenerator(badnick)
+	o:send("NICK %s", newnick)
+end
+
+-- ERR_ERRONEUSNICKNAME (Misspelt but remains for historical reasons)
+handlers["432"] = needNewNick
+
+-- ERR_NICKNAMEINUSE
+handlers["433"] = needNewNick
+
 --NAMES list
 handlers["353"] = function(o, prefix, me, chanType, channel, names)
 	if o.track_users then

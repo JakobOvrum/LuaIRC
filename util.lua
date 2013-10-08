@@ -1,9 +1,12 @@
 local setmetatable = setmetatable
+local sub = string.sub
+local byte = string.byte
 local char = string.char
 local table = table
 local assert = assert
 local tostring = tostring
 local type = type
+local random = math.random
 
 module "irc"
 
@@ -107,3 +110,27 @@ local underlineByte = char(31)
 function underline(text)
 	return underlineByte..text..underlineByte
 end
+
+function checkNick(nick)
+	return nick:find("^[a-zA-Z_%-%[|%]%^{|}`][a-zA-Z0-9_%-%[|%]%^{|}`]*$") ~= nil
+end
+
+function defaultNickGenerator(nick)
+	-- LuaBot -> LuaCot -> LuaCou -> ...
+	-- We change a random charachter rather than appending to the
+	-- nickname as otherwise the new nick could exceed the ircd's
+	-- maximum nickname length.
+	local randindex = random(1, #nick)
+	local randchar = sub(nick, randindex, randindex)
+	local b = byte(randchar)
+	b = b + 1
+	if b < 65 or b > 125 then
+		b = 65
+	end
+	-- Get the halves before and after the changed character
+	local first = sub(nick, 1, randindex - 1)
+	local last = sub(nick, randindex + 1, #nick)
+	nick = first..char(b)..last  -- Insert the new charachter
+	return nick
+end
+
