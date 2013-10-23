@@ -8,7 +8,7 @@ module "irc"
 handlers = {}
 
 handlers["PING"] = function(o, prefix, query)
-	o:send("PONG :%s", query)
+	o:queue("PONG :%s", query)
 end
 
 handlers["001"] = function(o, prefix, me)
@@ -81,7 +81,7 @@ end
 
 local function needNewNick(o, prefix, target, badnick)
 	local newnick = o.nickGenerator(badnick)
-	o:send("NICK %s", newnick)
+	o:queue("NICK %s", newnick)
 end
 
 -- ERR_ERRONEUSNICKNAME (Misspelt but remains for historical reasons)

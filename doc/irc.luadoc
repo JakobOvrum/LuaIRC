@@ -159,3 +159,12 @@ function irc:shutdown()
 -- Apart from <code>nick</code>, fields may be missing. To fill them in, enable user tracking and use irc:whois.
 -- @name User
 -- @class table
+
+-- If you need a simple queue you can enable one by requiring "irc.queue".
+-- Doind so will add the following features:
+
+--- Queue a raw line of IRC to be sent to the server as soon as possible.
+-- @param msg Line to be sent, excluding newline characters.
+-- @param ... Format parameters for <code>msg</code>, with <code>string.format</code> semantics. [optional]
+function irc:queue(msg, ...)
+

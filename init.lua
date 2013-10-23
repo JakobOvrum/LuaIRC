@@ -119,17 +119,17 @@ function meta_preconnect:connect(_host, _port)
 	self.socket = s
 	setmetatable(self, meta)
 
-	self:send("CAP REQ multi-prefix")
+	self:queue("CAP REQ multi-prefix")
 
 	self:invoke("PreRegister", self)
-	self:send("CAP END")
+	self:queue("CAP END")
 
 	if password then
-		self:send("PASS %s", password)
+		self:queue("PASS %s", password)
 	end
 
-	self:send("NICK %s", self.nick)
-	self:send("USER %s 0 * :%s", self.username, self.realname)
+	self:queue("NICK %s", self.nick)
+	self:queue("USER %s 0 * :%s", self.username, self.realname)
 
 	self.channels = {}
 
@@ -227,6 +227,6 @@ function meta:whois(nick)
 end
 
 function meta:topic(channel)
-	self:send("TOPIC %s", channel)
+	self:queue("TOPIC %s", channel)
 end
 
