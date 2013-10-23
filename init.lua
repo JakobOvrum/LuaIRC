@@ -10,6 +10,7 @@ local require = require
 local tonumber = tonumber
 local type = type
 local pcall = pcall
+local remove = table.remove
 
 module "irc"
 
@@ -41,6 +42,9 @@ function new(data)
 		hooks = {};
 		track_users = true;
 		supports = {};
+		messageQueue = {};
+		lastThought = 0;
+		recentMessages = 0;
 	}
 	assert(checkNick(o.nick), "Erroneous nickname passed to irc.new")
 	return setmetatable(o, meta_preconnect)
@@ -121,17 +125,17 @@ function meta_preconnect:connect(_host, _port)
 	self.socket = s
 	setmetatable(self, meta)
 
-	self:send(Message("CAP", {"REQ", "multi-prefix"}))
+	self:queue(Message("CAP", {"REQ", "multi-prefix"}))
 
 	self:invoke("PreRegister", self)
-	self:send(Message("CAP", {"END"}))
+	self:queue(Message("CAP", {"END"}))
 
 	if password then
-		self:send(Message("PASS", {password}))
+		self:queue(Message("PASS", {password}))
 	end
 
-	self:send(msgs.nick(self.nick))
-	self:send(Message("USER", {self.username, "0", "*", self.realname}))
+	self:queue(msgs.nick(self.nick))
+	self:queue(Message("USER", {self.username, "0", "*", self.realname}))
 
 	self.channels = {}
 
@@ -180,6 +184,21 @@ function meta:think()
 			break
 		end
 	end
+
+	-- Handle outgoing message queue
+	local diff = socket.gettime() - self.lastThought
+	self.recentMessages = self.recentMessages - (diff * 2)
+	if self.recentMessages < 0 then
+		self.recentMessages = 0
+	end
+	for i = 1, #self.messageQueue do
+		if self.recentMessages > 4 then
+			break
+		end
+		self:send(remove(self.messageQueue, 1))
+		self.recentMessages = self.recentMessages + 1
+	end
+	self.lastThought = socket.gettime()
 end
 
 local handlers = handlers
@@ -231,6 +250,6 @@ function meta:whois(nick)
 end
 
 function meta:topic(channel)
-	self:send(msgs.topic(channel))
+	self:queue(msgs.topic(channel))
 end
 

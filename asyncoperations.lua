@@ -28,6 +28,10 @@ function meta:send(msg, ...)
 	end
 end
 
+function meta:queue(msg)
+	table.insert(self.messageQueue, msg)
+end
+
 local function verify(str, errLevel)
 	if str:find("^:") or str:find("%s%z") then
 		error(("malformed parameter '%s' to irc command"):format(str), errLevel)
@@ -39,26 +43,26 @@ end
 function meta:sendChat(target, msg)
 	-- Split the message into segments if it includes newlines.
 	for line in msg:gmatch("([^\r\n]+)") do
-		self:send(msgs.privmsg(verify(target, 3), line))
+		self:queue(msgs.privmsg(verify(target, 3), line))
 	end
 end
 
 function meta:sendNotice(target, msg)
 	-- Split the message into segments if it includes newlines.
 	for line in msg:gmatch("([^\r\n]+)") do
-		self:send(msgs.notice(verify(target, 3), line))
+		self:queue(msgs.notice(verify(target, 3), line))
 	end
 end
 
 function meta:join(channel, key)
-	self:send(msgs.join(
+	self:queue(msgs.join(
 			verify(channel, 3),
 			key and verify(key, 3) or nil))
 end
 
 function meta:part(channel, reason)
 	channel = verify(channel, 3)
-	self:send(msgs.part(channel, reason))
+	self:queue(msgs.part(channel, reason))
 	if self.track_users then
 		self.channels[channel] = nil
 	end
@@ -88,6 +92,6 @@ function meta:setMode(t)
 		mode = table.concat{mode, "-", verify(rem, 3)}
 	end
 
-	self:send(msgs.mode(verify(target, 3), mode))
+	self:queue(msgs.mode(verify(target, 3), mode))
 end
 

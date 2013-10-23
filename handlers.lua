@@ -82,7 +82,7 @@ end
 
 local function needNewNick(conn, msg)
 	local newnick = conn.nickGenerator(msg.args[2])
-	conn:send(msgs.nick(newnick))
+	conn:queue(msgs.nick(newnick))
 end
 
 -- ERR_ERRONEUSNICKNAME (Misspelt but remains for historical reasons)

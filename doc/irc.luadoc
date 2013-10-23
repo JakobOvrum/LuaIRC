@@ -75,6 +75,10 @@ function irc:topic(channel)
 -- @param ... Format parameters for <code>msg</code>, with <code>string.format</code> semantics. [optional]
 function irc:send(msg, ...)
 
+--- Queue Message to be sent to the server.
+-- @param msg Message to be sent.
+function irc:queue(msg)
+
 --- Send a message to a channel or user.
 -- @param target Nick or channel to send to.
 -- @param message Message text.
