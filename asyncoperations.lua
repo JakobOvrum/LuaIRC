@@ -1,6 +1,7 @@
 local table = table
 local assert = assert
 local select = select
+local pairs = pairs
 
 module "irc"
 
