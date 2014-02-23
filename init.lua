@@ -137,6 +137,7 @@ function meta_preconnect:connect(_host, _port)
 
 	repeat
 		self:think()
+		socket.select(nil, nil, 0.1) -- Sleep so that we don't eat CPU
 	until self.authed
 end
 
