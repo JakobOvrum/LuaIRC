@@ -102,6 +102,17 @@ handlers["005"] = function(o, user, nick, ...)
 	end
 end
 
+-- RPL_MOTDSTART
+handlers["375"] = function(o, user, info)
+	o.motd = ""
+end
+
+-- RPL_MOTD
+handlers["372"] = function(o, user, nick, line)
+	-- MOTD lines have a "- " prefix, strip it.
+	o.motd = o.motd..line:sub(3)..'\n'
+end
+
 --NAMES list
 handlers["353"] = function(o, user, me, chanType, channel, names)
 	if o.track_users then
