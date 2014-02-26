@@ -182,10 +182,12 @@ end
 local handlers = handlers
 
 function meta:handle(prefix, cmd, params)
+	local user = parsePrefix(prefix)
 	local handler = handlers[cmd]
 	if handler then
-		return handler(self, prefix, unpack(params))
+		handler(self, user, unpack(params))
 	end
+	self:invoke("Do"..capitalize(cmd), user, unpack(params))
 end
 
 local whoisHandlers = {
