@@ -39,6 +39,7 @@ function new(data)
 		nickGenerator = data.nickGenerator or defaultNickGenerator;
 		hooks = {};
 		track_users = true;
+		supports = {};
 	}
 	assert(checkNick(o.nick), "Erroneous nickname passed to irc.new")
 	return setmetatable(o, meta_preconnect)
