@@ -90,6 +90,22 @@ handlers["432"] = needNewNick
 -- ERR_NICKNAMEINUSE
 handlers["433"] = needNewNick
 
+-- RPL_ISUPPORT
+handlers["005"] = function(o, prefix, nick, ...)
+	local list = {...}
+	local listlen = #list
+	-- Skip last parameter (info)
+	for i = 1, listlen - 1 do
+		local item = list[i]
+		local pos = item:find("=")
+		if pos then
+			o.supports[item:sub(1, pos - 1)] = item:sub(pos + 1)
+		else
+			o.supports[item] = true
+		end
+	end
+end
+
 --NAMES list
 handlers["353"] = function(o, prefix, me, chanType, channel, names)
 	if o.track_users then
