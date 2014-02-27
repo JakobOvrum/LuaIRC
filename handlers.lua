@@ -109,7 +109,7 @@ handlers["353"] = function(o, user, me, chanType, channel, names)
 
 		local users = o.channels[channel].users
 		for nick in names:gmatch("(%S+)") do
-			local access, name = parseNick(nick)
+			local access, name = parseNick(o, nick)
 			users[name] = {access = access}
 		end
 	end
@@ -161,18 +161,17 @@ handlers["MODE"] = function(o, user, target, modes, ...)
 	if o.track_users and target ~= o.nick then
 		local add = true
 		local optList = {...}
+		updatePrefixModes(o)
 		for c in modes:gmatch(".") do
 			if     c == "+" then add = true
 			elseif c == "-" then add = false
-			elseif c == "o" then
-				local user = table.remove(optList, 1)
-				o.channels[target].users[user].access.op = add
-			elseif c == "h" then
-				local user = table.remove(optList, 1)
-				o.channels[target].users[user].access.halfop = add
-			elseif c == "v" then
-				local user = table.remove(optList, 1)
-				o.channels[target].users[user].access.voice = add
+			elseif o.modeprefix[c] then
+				local nick = table.remove(optList, 1)
+				local access = o.channels[target].users[nick].access
+				access[o.modeprefix[c]] = add
+				if     c == "o" then access.op = add
+				elseif c == "v" then access.voice = add
+				end
 			end
 		end
 	end
