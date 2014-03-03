@@ -139,7 +139,7 @@ end
 
 function defaultNickGenerator(nick)
 	-- LuaBot -> LuaCot -> LuaCou -> ...
-	-- We change a random charachter rather than appending to the
+	-- We change a random character rather than appending to the
 	-- nickname as otherwise the new nick could exceed the ircd's
 	-- maximum nickname length.
 	local randindex = random(1, #nick)
