@@ -20,6 +20,7 @@ _META = meta
 require "irc.util"
 require "irc.asyncoperations"
 require "irc.handlers"
+require "irc.messages"
 
 local meta_preconnect = {}
 function meta_preconnect.__index(o, k)
@@ -120,17 +121,17 @@ function meta_preconnect:connect(_host, _port)
 	self.socket = s
 	setmetatable(self, meta)
 
-	self:send("CAP REQ multi-prefix")
+	self:send(Message("CAP", {"REQ", "multi-prefix"}))
 
 	self:invoke("PreRegister", self)
-	self:send("CAP END")
+	self:send(Message("CAP", {"END"}))
 
 	if password then
-		self:send("PASS %s", password)
+		self:send(Message("PASS", {password}))
 	end
 
-	self:send("NICK %s", self.nick)
-	self:send("USER %s 0 * :%s", self.username, self.realname)
+	self:send(msgs.nick(self.nick))
+	self:send(Message("USER", {self.username, "0", "*", self.realname}))
 
 	self.channels = {}
 
@@ -146,7 +147,7 @@ function meta:disconnect(message)
 	message = message or "Bye!"
 
 	self:invoke("OnDisconnect", message, false)
-	self:send("QUIT :%s", message)
+	self:send(msgs.quit(message))
 
 	self:shutdown()
 end
@@ -201,7 +202,7 @@ local whoisHandlers = {
 }
 
 function meta:whois(nick)
-	self:send("WHOIS %s", nick)
+	self:send(msgs.whois(nick))
 
 	local result = {}
 
@@ -231,6 +232,6 @@ function meta:whois(nick)
 end
 
 function meta:topic(channel)
-	self:send("TOPIC %s", channel)
+	self:send(msgs.topic(channel))
 end
 

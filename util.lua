@@ -162,3 +162,11 @@ function capitalize(text)
   return text:sub(1, 1):upper()..text:sub(2):lower()
 end
 
+function split(str, sep)
+	t = {}
+	for s in str:gmatch("%S+") do
+		table.insert(t, s)
+	end
+	return t
+end
+

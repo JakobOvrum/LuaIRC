@@ -3,14 +3,19 @@ local assert = assert
 local error = error
 local select = select
 local pairs = pairs
+local type = type
 
 module "irc"
 
 local meta = _META
 
 function meta:send(msg, ...)
-	if select("#", ...) > 0 then
-		msg = msg:format(...)
+	if type(msg) == "table" then
+		msg = msg:toRFC1459()
+	else
+		if select("#", ...) > 0 then
+			msg = msg:format(...)
+		end
 	end
 	self:invoke("OnSend", msg)
 
@@ -34,28 +39,26 @@ end
 function meta:sendChat(target, msg)
 	-- Split the message into segments if it includes newlines.
 	for line in msg:gmatch("([^\r\n]+)") do
-		self:send("PRIVMSG %s :%s", verify(target, 3), line)
+		self:send(msgs.privmsg(verify(target, 3), line))
 	end
 end
 
 function meta:sendNotice(target, msg)
 	-- Split the message into segments if it includes newlines.
 	for line in msg:gmatch("([^\r\n]+)") do
-		self:send("NOTICE %s :%s", verify(target, 3), line)
+		self:send(msgs.notice(verify(target, 3), line))
 	end
 end
 
 function meta:join(channel, key)
-	if key then
-		self:send("JOIN %s :%s", verify(channel, 3), verify(key, 3))
-	else
-		self:send("JOIN %s", verify(channel, 3))
-	end
+	self:send(msgs.join(
+			verify(channel, 3),
+			key and verify(key, 3) or nil))
 end
 
-function meta:part(channel)
+function meta:part(channel, reason)
 	channel = verify(channel, 3)
-	self:send("PART %s", channel)
+	self:send(msgs.part(channel, reason))
 	if self.track_users then
 		self.channels[channel] = nil
 	end
@@ -85,5 +88,6 @@ function meta:setMode(t)
 		mode = table.concat{mode, "-", verify(rem, 3)}
 	end
 
-	self:send("MODE %s %s", verify(target, 3), mode)
+	self:send(msgs.mode(verify(target, 3), mode))
 end
+
