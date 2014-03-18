@@ -108,7 +108,7 @@ function irc:setMode(t)
 
 --internal
 function irc:invoke(name, ...)
-function irc:handle(prefix, cmd, params)
+function irc:handle(msg)
 function irc:shutdown()
 
 --- Table with connection information.
@@ -123,17 +123,23 @@ function irc:shutdown()
 -- @name Connection
 -- @class table
 
---- Class representing an IRC message.
+--- Class representing an IRC message.  Objects of this class may contain the following fields:
 -- <ul>
--- <li><code>sender</code></li>
--- <li><code>command</code></li>
--- <li><code>args</code></li>
+-- <li><code>prefix</code> - Prefix of the message.</li>
+-- <li><code>user</code> - A User object describing the sender of the message.</li>
+-- <li><code>command</code> - The IRC command.</li>
+-- <li><code>args</code> - A list of the command arguments.</li>
+-- </ul>
+-- Fields may be missing.  The only guarantee is that <code>args</code> is a table.
+-- Messages have the following methods:
+-- <ul>
 -- <li><code>toRFC1459()</code></li>
 -- </ul>
 -- @name Message
 -- @class table
 
---- List of hooks you can use with irc:hook. The parameter list describes the parameters passed to the callback function.
+--- List of hooks you can use with irc:hook.
+-- The parameter list describes the parameters passed to the callback function.
 -- <ul>
 -- <li><code>PreRegister(connection)</code>Useful for CAP commands and SASL.</li>
 -- <li><code>OnRaw(line) - (any non false/nil return value assumes line handled and will not be further processed)</code></li>
@@ -152,7 +158,7 @@ function irc:shutdown()
 -- <li><code>OnUserMode(modes)</code></li>
 -- <li><code>OnChannelMode(user, channel, modes)</code></li>
 -- <li><code>OnModeChange(user, target, modes, ...)</code>* ('...' contains mode options such as banmasks)</li>
--- <li><code>DoX(user, ...)</code>'X' is any IRC command or numeric with the first letter capitalized (eg, DoPing and Do001)</li>
+-- <li><code>DoX(msg)</code>'X' is any IRC command or numeric with the first letter capitalized (eg, DoPing and Do001)</li>
 -- </ul>
 -- * Event also invoked for yourself.
 -- † Channel passed only when user tracking is enabled
@@ -161,12 +167,14 @@ function irc:shutdown()
 
 --- Table with information about a user.
 -- <ul>
--- <li><code>nick</code> - User nickname. Always present.</li>
+-- <li><code>server</code> - Server name.</li>
+-- <li><code>nick</code> - User nickname.</li>
 -- <li><code>username</code> - User username.</li>
 -- <li><code>host</code> - User hostname.</li>
 -- <li><code>realname</code> - User real name.</li>
 -- <li><code>access</code> - User access, available in channel-oriented callbacks. A table containing boolean fields for each access mode that the server supports. Eg: 'o', and 'v'.</li>
 -- </ul>
--- Apart from <code>nick</code>, fields may be missing. To fill them in, enable user tracking and use irc:whois.
+-- Fields may be missing. To fill them in, enable user tracking and use irc:whois.
 -- @name User
 -- @class table
+

@@ -2,82 +2,87 @@ local pairs = pairs
 local error = error
 local tonumber = tonumber
 local table = table
+local unpack = unpack
 
 module "irc"
 
 handlers = {}
 
-handlers["PING"] = function(o, user, query)
-	o:send(Message("PONG", {query}))
+handlers["PING"] = function(conn, msg)
+	conn:send(Message("PONG", msg.args))
 end
 
-handlers["001"] = function(o, user, me)
-	o.authed = true
-	o.nick = me
+handlers["001"] = function(conn, msg)
+	conn.authed = true
+	conn.nick = msg.args[1]
 end
 
-handlers["PRIVMSG"] = function(o, user, channel, message)
-	o:invoke("OnChat", user, channel, message)
+handlers["PRIVMSG"] = function(conn, msg)
+	conn:invoke("OnChat", msg.user, msg.args[1], msg.args[2])
 end
 
-handlers["NOTICE"] = function(o, user, channel, message)
-	o:invoke("OnNotice", user, channel, message)
+
+handlers["NOTICE"] = function(conn, msg)
+	conn:invoke("OnNotice", msg.user, msg.args[1], msg.args[2])
 end
 
-handlers["JOIN"] = function(o, user, channel)
-	if o.track_users then
-		if user.nick == o.nick then
-			o.channels[channel] = {users = {}}
+handlers["JOIN"] = function(conn, msg)
+	local channel = msg.args[1]
+	if conn.track_users then
+		if msg.user.nick == conn.nick then
+			conn.channels[channel] = {users = {}}
 		else
-			o.channels[channel].users[user.nick] = user
+			conn.channels[channel].users[msg.user.nick] = user
 		end
 	end
 
-	o:invoke("OnJoin", user, channel)
+	conn:invoke("OnJoin", msg.user, msg.args[1])
 end
 
-handlers["PART"] = function(o, user, channel, reason)
-	if o.track_users then
-		if user.nick == o.nick then
-			o.channels[channel] = nil
+handlers["PART"] = function(conn, msg)
+	local channel = msg.args[1]
+	if conn.track_users then
+		if msg.user.nick == conn.nick then
+			conn.channels[channel] = nil
 		else
-			o.channels[channel].users[user.nick] = nil
+			conn.channels[channel].users[msg.user.nick] = nil
 		end
 	end
-	o:invoke("OnPart", user, channel, reason)
+	conn:invoke("OnPart", msg.user, msg.args[1], msg.args[2])
 end
 
-handlers["QUIT"] = function(o, user, msg)
-	if o.track_users then
-		for channel, v in pairs(o.channels) do
-			v.users[user.nick] = nil
+handlers["QUIT"] = function(conn, msg)
+	if conn.track_users then
+		for chanName, chan in pairs(conn.channels) do
+			chan.users[msg.user.nick] = nil
 		end
 	end
-	o:invoke("OnQuit", user, msg)
+	conn:invoke("OnQuit", msg.user, msg.args[1], msg.args[2])
 end
 
-handlers["NICK"] = function(o, user, newnick)
-	if o.track_users then
-		for channel, v in pairs(o.channels) do
-			local users = v.users
-			local oldinfo = users[user.nick]
+handlers["NICK"] = function(conn, msg)
+	local newNick = msg.args[1]
+	if conn.track_users then
+		for chanName, chan in pairs(conn.channels) do
+			local users = chan.users
+			local oldinfo = users[msg.user.nick]
 			if oldinfo then
-				users[newnick] = oldinfo
-				users[user.nick] = nil
-				o:invoke("NickChange", user, newnick, channel)
+				users[newNick] = oldinfo
+				users[msg.user.nick] = nil
+				conn:invoke("NickChange", msg.user, newNick, chanName)
 			end
 		end
 	else
-		o:invoke("NickChange", user, newnick)
+		conn:invoke("NickChange", msg.user, newNick)
 	end
-	if user.nick == o.nick then
-		o.nick = newnick
+	if msg.user.nick == conn.nick then
+		conn.nick = newnick
 	end
 end
 
-local function needNewNick(o, user, target, badnick)
-	local newnick = o.nickGenerator(badnick)
-	o:send(msgs.nick(newnick))
+local function needNewNick(conn, msg)
+	local newnick = conn.nickGenerator(msg.args[2])
+	conn:send(msgs.nick(newnick))
 end
 
 -- ERR_ERRONEUSNICKNAME (Misspelt but remains for historical reasons)
@@ -87,111 +92,119 @@ handlers["432"] = needNewNick
 handlers["433"] = needNewNick
 
 -- RPL_ISUPPORT
-handlers["005"] = function(o, user, nick, ...)
-	local list = {...}
-	local listlen = #list
-	-- Skip last parameter (info)
-	for i = 1, listlen - 1 do
-		local item = list[i]
+handlers["005"] = function(conn, msg)
+	local arglen = #msg.args
+	-- Skip first and last parameters (nick and info)
+	for i = 2, arglen - 1 do
+		local item = msg.args[i]
 		local pos = item:find("=")
 		if pos then
-			o.supports[item:sub(1, pos - 1)] = item:sub(pos + 1)
+			conn.supports[item:sub(1, pos - 1)] = item:sub(pos + 1)
 		else
-			o.supports[item] = true
+			conn.supports[item] = true
 		end
 	end
 end
 
 -- RPL_MOTDSTART
-handlers["375"] = function(o, user, info)
-	o.motd = ""
+handlers["375"] = function(conn, msg)
+	conn.motd = ""
 end
 
 -- RPL_MOTD
-handlers["372"] = function(o, user, nick, line)
+handlers["372"] = function(conn, msg)
 	-- MOTD lines have a "- " prefix, strip it.
-	o.motd = o.motd..line:sub(3)..'\n'
+	conn.motd = conn.motd .. msg.args[2]:sub(3) .. '\n'
 end
 
---NAMES list
-handlers["353"] = function(o, user, me, chanType, channel, names)
-	if o.track_users then
-		o.channels[channel] = o.channels[channel] or {users = {}, type = chanType}
+-- NAMES list
+handlers["353"] = function(conn, msg)
+	local chanType = msg.args[2]
+	local channel = msg.args[3]
+	local names = msg.args[4]
+	if conn.track_users then
+		conn.channels[channel] = conn.channels[channel] or {users = {}, type = chanType}
 
-		local users = o.channels[channel].users
+		local users = conn.channels[channel].users
 		for nick in names:gmatch("(%S+)") do
-			local access, name = parseNick(o, nick)
+			local access, name = parseNick(conn, nick)
 			users[name] = {access = access}
 		end
 	end
 end
 
---end of NAMES
-handlers["366"] = function(o, user, me, channel, msg)
-	if o.track_users then
-		o:invoke("NameList", channel, msg)
+-- End of NAMES list
+handlers["366"] = function(conn, msg)
+	if conn.track_users then
+		conn:invoke("NameList", msg.args[2], msg.args[3])
 	end
 end
 
---no topic
-handlers["331"] = function(o, user, me, channel)
-	o:invoke("OnTopic", channel, nil)
+-- No topic
+handlers["331"] = function(conn, msg)
+	conn:invoke("OnTopic", msg.args[2], nil)
 end
 
---new topic
-handlers["TOPIC"] = function(o, user, channel, topic)
-	o:invoke("OnTopic", channel, topic)
+handlers["TOPIC"] = function(conn, msg)
+	conn:invoke("OnTopic", msg.args[1], msg.args[2])
 end
 
-handlers["332"] = function(o, user, me, channel, topic)
-	o:invoke("OnTopic", channel, topic)
+handlers["332"] = function(conn, msg)
+	conn:invoke("OnTopic", msg.args[2], msg.args[3])
 end
 
---topic creation info
-handlers["333"] = function(o, user, me, channel, nick, time)
-	o:invoke("OnTopicInfo", channel, nick, tonumber(time))
+-- Topic creation info
+handlers["333"] = function(conn, msg)
+	conn:invoke("OnTopicInfo", msg.args[2], msg.args[3], tonumber(msg.args[4]))
 end
 
-handlers["KICK"] = function(o, user, channel, kicked, reason)
-	o:invoke("OnKick", channel, kicked, user, reason)
+handlers["KICK"] = function(conn, msg)
+	conn:invoke("OnKick", msg.args[1], msg.args[2], msg.user, msg.args[3])
 end
 
---RPL_UMODEIS
---To answer a query about a client's own mode, RPL_UMODEIS is sent back
-handlers["221"] = function(o, user, user, modes)
-	o:invoke("OnUserMode", modes)
+-- RPL_UMODEIS
+-- To answer a query about a client's own mode, RPL_UMODEIS is sent back
+handlers["221"] = function(conn, msg)
+	conn:invoke("OnUserMode", msg.args[2])
 end
 
---RPL_CHANNELMODEIS
---The result from common irc servers differs from that defined by the rfc
-handlers["324"] = function(o, user, user, channel, modes)
-	o:invoke("OnChannelMode", channel, modes)
+-- RPL_CHANNELMODEIS
+-- The result from common irc servers differs from that defined by the rfc
+handlers["324"] = function(conn, msg)
+	conn:invoke("OnChannelMode", msg.args[2], msg.args[3])
 end
 
-handlers["MODE"] = function(o, user, target, modes, ...)
-	if o.track_users and target ~= o.nick then
+handlers["MODE"] = function(conn, msg)
+	local target = msg.args[1]
+	local modes = msg.args[2]
+	local optList = {}
+	for i = 3, #msg.args do
+		table.insert(optList, msg.args[i])
+	end
+	if conn.track_users and target ~= conn.nick then
 		local add = true
-		local optList = {...}
-		updatePrefixModes(o)
+		local argNum = 1
+		updatePrefixModes(conn)
 		for c in modes:gmatch(".") do
 			if     c == "+" then add = true
 			elseif c == "-" then add = false
-			elseif o.modeprefix[c] then
-				local nick = table.remove(optList, 1)
-				local access = o.channels[target].users[nick].access
-				access[o.modeprefix[c]] = add
+			elseif conn.modeprefix[c] then
+				local nick = optList[argNum]
+				argNum = argNum + 1
+				local access = conn.channels[target].users[nick].access
+				access[conn.modeprefix[c]] = add
 				if     c == "o" then access.op = add
 				elseif c == "v" then access.voice = add
 				end
 			end
 		end
 	end
-	o:invoke("OnModeChange", user, target, modes, ...)
+	conn:invoke("OnModeChange", msg.user, target, modes, unpack(optList))
 end
 
-handlers["ERROR"] = function(o, user, message)
-	o:invoke("OnDisconnect", message, true)
-	o:shutdown()
-	error(message, 3)
+handlers["ERROR"] = function(conn, msg)
+	conn:invoke("OnDisconnect", msg.args[1], true)
+	conn:shutdown()
+	error(msg.args[1], 3)
 end
 

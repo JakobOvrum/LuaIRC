@@ -10,44 +10,31 @@ local random = math.random
 
 module "irc"
 
---protocol parsing
+-- Protocol parsing
 function parse(line)
-	local prefix
-	local lineStart = 1
-	if line:sub(1,1) == ":" then
+	local msg = Message()
+
+	if line:sub(1, 1) == ":" then
 		local space = line:find(" ")
-		prefix = line:sub(2, space-1)
-		lineStart = space
+		msg.prefix = line:sub(2, space - 1)
+		msg.user = parsePrefix(msg.prefix)
+		line = line:sub(space + 1)
 	end
 
-	local _, trailToken = line:find("%s+:", lineStart)
-	local lineStop = line:len()
-	local trailing
-	if trailToken then
-		trailing = line:sub(trailToken + 1)
-		lineStop = trailToken - 2
-	end
+	local pos
+	msg.command, pos = line:match("(%S+)()")
+	line = line:sub(pos)
 
-	local params = {}
-
-	local _, cmdEnd, cmd = line:find("(%S+)", lineStart)
-	local pos = cmdEnd + 1
-	while true do
-		local _, stop, param = line:find("(%S+)", pos)
-		
-		if not param or stop > lineStop then
+	for pos, param in line:gmatch("()(%S+)") do
+		if param:sub(1, 1) == ":" then
+			param = line:sub(pos + 1)
+			table.insert(msg.args, param)
 			break
 		end
-
-		pos = stop + 1
-		params[#params + 1] = param
+		table.insert(msg.args, param)
 	end
 
-	if trailing then 
-		params[#params + 1] = trailing 
-	end
-
-	return prefix, cmd, params
+	return msg
 end
 
 function parseNick(conn, nick)
@@ -71,8 +58,9 @@ end
 
 function parsePrefix(prefix)
 	local user = {}
-	if prefix then
-		user.nick, user.username, user.host = prefix:match("^(.+)!(.+)@(.+)$")
+	user.nick, user.username, user.host = prefix:match("^(.+)!(.+)@(.+)$")
+	if not user.nick and prefix:find(".", 1, true) then
+		user.server = prefix
 	end
 	return user
 end
@@ -163,7 +151,7 @@ function capitalize(text)
 end
 
 function split(str, sep)
-	t = {}
+	local t = {}
 	for s in str:gmatch("%S+") do
 		table.insert(t, s)
 	end

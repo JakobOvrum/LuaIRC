@@ -68,7 +68,7 @@ meta_preconnect.unhook = meta.unhook
 function meta:invoke(name, ...)
 	local hooks = self.hooks[name]
 	if hooks then
-		for id,f in pairs(hooks) do
+		for id, f in pairs(hooks) do
 			if f(...) then
 				return true
 			end
@@ -184,13 +184,12 @@ end
 
 local handlers = handlers
 
-function meta:handle(prefix, cmd, params)
-	local user = parsePrefix(prefix)
-	local handler = handlers[cmd]
+function meta:handle(msg)
+	local handler = handlers[msg.command]
 	if handler then
-		handler(self, user, unpack(params))
+		handler(self, msg)
 	end
-	self:invoke("Do"..capitalize(cmd), user, unpack(params))
+	self:invoke("Do"..capitalize(msg.command), msg)
 end
 
 local whoisHandlers = {
@@ -209,15 +208,15 @@ function meta:whois(nick)
 	while true do
 		local line = getline(self, 3)
 		if line then
-			local prefix, cmd, args = parse(line)
+			local msg = parse(line)
 
-			local handler = whoisHandlers[cmd]
+			local handler = whoisHandlers[msg.command]
 			if handler then
-				result[handler] = args
+				result[handler] = msg.args
 			elseif cmd == "318" then
 				break
 			else
-				self:handle(prefix, cmd, args)
+				self:handle(msg)
 			end
 		end
 	end
