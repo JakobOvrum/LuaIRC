@@ -1,6 +1,7 @@
 local assert = assert
 local setmetatable = setmetatable
 local unpack = unpack
+local pairs = pairs
 
 module "irc"
 
@@ -17,7 +18,28 @@ function Message(cmd, args)
 end
 
 function msg_meta:toRFC1459()
-	s = self.command
+	s = ""
+
+	if self.tags then
+		s = s.."@"
+		for key, value in pairs(self.tags) do
+			s = s..key
+			if value ~= true then
+				assert(not value:find("[%z\07\r\n; ]"),
+					"NUL, BELL, CR, LF, semicolon, and"
+					.." space are not allowed in RFC1459"
+					.." formated tag values.")
+				s = s.."="..value
+			end
+			s = s..";"
+		end
+		-- Strip trailing semicolon
+		s = s:sub(1, -2)
+		s = s.." "
+	end
+
+	s = s..self.command
+
 	argnum = #self.args
 	for i = 1, argnum do
 		local arg = self.args[i]
@@ -33,6 +55,7 @@ function msg_meta:toRFC1459()
 		end
 		s = s..arg
 	end
+
 	return s
 end
 

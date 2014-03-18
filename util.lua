@@ -14,8 +14,25 @@ module "irc"
 function parse(line)
 	local msg = Message()
 
+	-- IRCv3 tags
+	if line:sub(1, 1) == "@" then
+		msg.tags = {}
+		local space = line:find(" ", 1, true)
+		-- For each semicolon-delimited section from after
+		-- the @ character to before the space character.
+		for tag in line:sub(2, space - 1):gmatch("([^;]+)") do
+			local eq = tag:find("=", 1, true)
+			if eq then
+				msg.tags[tag:sub(1, eq - 1)] = tag:sub(eq + 1)
+			else
+				msg.tags[tag] = true
+			end
+		end
+		line = line:sub(space + 1)
+	end
+
 	if line:sub(1, 1) == ":" then
-		local space = line:find(" ")
+		local space = line:find(" ", 1, true)
 		msg.prefix = line:sub(2, space - 1)
 		msg.user = parsePrefix(msg.prefix)
 		line = line:sub(space + 1)

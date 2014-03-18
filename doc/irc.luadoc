@@ -125,6 +125,7 @@ function irc:shutdown()
 
 --- Class representing an IRC message.  Objects of this class may contain the following fields:
 -- <ul>
+-- <li><code>tags</code> - A table of IRCv3 tags.</li>
 -- <li><code>prefix</code> - Prefix of the message.</li>
 -- <li><code>user</code> - A User object describing the sender of the message.</li>
 -- <li><code>command</code> - The IRC command.</li>
