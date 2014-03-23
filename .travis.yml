@@ -1,4 +1,4 @@
-language: d
+language: lua
 
 notifications:
   email: false
@@ -9,7 +9,7 @@ env:
 
 install:
   - sudo apt-get -y update
-  - sudo apt-get -y install lua5.1 lua-doc
+  - sudo apt-get -y install lua5.1 luadoc
 
 script:
   - ./push-luadoc.sh
