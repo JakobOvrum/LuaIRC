@@ -46,7 +46,7 @@ function irc:unhook(name, id)
 --- Connect <code>irc</code> to an IRC server.
 -- @param host Host address.
 -- @param port Server port. [default 6667]
-function irc:connect(server, port)
+function irc:connect(host, port)
 
 -- @param table Table of connection details
 -- @see Connection
