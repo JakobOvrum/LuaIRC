@@ -1,0 +1,14 @@
+language: lua
+
+notifications:
+  email: false
+
+env:
+  global:
+    - secure: "kFhU+DZjhq/KbDt0DIDWnlskXMa12miNelmhhy30fQGgVIdiibDGKMNGyLahWp8CnPu1DARb5AZWK2TDfARdnURT2pgcsG83M7bYIY6cR647BWjL7oAhJ6CYEzTWJTBjeUjpN/o4vIgfXSDR0c7vboDi7Xz8ilfrBujPL2Oi/og="
+
+install:
+  - sudo apt-get -y install lua5.1 lua-doc
+
+script:
+  - ./push-luadoc.sh
