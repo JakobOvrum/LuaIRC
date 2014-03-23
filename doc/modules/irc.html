@@ -63,7 +63,7 @@
 <table class="function_list">
 
 	<tr>
-	<td class="name" nowrap><a href="#irc:connect">irc:connect</a>&nbsp;(server, port, host)</td>
+	<td class="name" nowrap><a href="#irc:connect">irc:connect</a>&nbsp;(host, port)</td>
 	<td class="summary">Connect <code>irc</code> to an IRC server.</td>
 	</tr>
 
@@ -88,7 +88,7 @@
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#irc:send">irc:send</a>&nbsp;(fmt, ...)</td>
+	<td class="name" nowrap><a href="#irc:send">irc:send</a>&nbsp;(msg, ...)</td>
 	<td class="summary">Send a raw line of IRC to the server.</td>
 	</tr>
 
@@ -174,7 +174,7 @@
 
 
 
-<dt><a name="irc:connect"></a><strong>irc:connect</strong>&nbsp;(server, port, host)</dt>
+<dt><a name="irc:connect"></a><strong>irc:connect</strong>&nbsp;(host, port)</dt>
 <dd>
 Connect <code>irc</code> to an IRC server.
 
@@ -183,15 +183,11 @@ Connect <code>irc</code> to an IRC server.
 <ul>
 	
 	<li>
-	  server: 
+	  host: Host address.
 	</li>
 	
 	<li>
 	  port: Server port. [default 6667]
-	</li>
-	
-	<li>
-	  host: Host address.
 	</li>
 	
 </ul>
@@ -333,7 +329,7 @@ Leave a channel.
 
 
 
-<dt><a name="irc:send"></a><strong>irc:send</strong>&nbsp;(fmt, ...)</dt>
+<dt><a name="irc:send"></a><strong>irc:send</strong>&nbsp;(msg, ...)</dt>
 <dd>
 Send a raw line of IRC to the server.
 
@@ -342,11 +338,11 @@ Send a raw line of IRC to the server.
 <ul>
 	
 	<li>
-	  fmt: Line to be sent, excluding newline characters.
+	  msg: Line to be sent, excluding newline characters.
 	</li>
 	
 	<li>
-	  ...: Format parameters for <code>fmt</code>, with <code>string.format</code> semantics.
+	  ...: Format parameters for <code>msg</code>, with <code>string.format</code> semantics. [optional]
 	</li>
 	
 </ul>
@@ -624,7 +620,7 @@ Returns a new <code>irc</code> object.
 
 
 <dt><a name="Hooks"></a><strong>Hooks</strong></dt>
-<dd>List of hooks you can use with irc:hook. The parameter list describes the parameters passed to the callback function. <ul> <li><code>OnRaw(line) - (any non false/nil return value assumes line handled and will not be further processed)</code></li> <li><code>OnDisconnect(message, errorOccurred)</code></li> <li><code>OnChat(user, channel, message)</code></li> <li><code>OnNotice(user, channel, message)</code></li> <li><code>OnJoin(user, channel)</code>*</li> <li><code>OnPart(user, channel)</code>*</li> <li><code>OnQuit(user, message)</code></li> <li><code>NickChange(user, newnick, channel)</code>*†</li> <li><code>NameList(channel, names)</code></li> <li><code>OnTopic(channel, topic)</code></li> <li><code>OnTopicInfo(channel, creator, timeCreated)</code></li> <li><code>OnKick(channel, nick, kicker, reason)</code>* (kicker is a <code>user</code> table)</li> <li><code>OnUserMode(modes)</code></li> <li><code>OnChannelMode(user, channel, modes)</code></li> <li><code>OnModeChange(user, target, modes)</code>*</li> </ul> * Event also invoked for yourself. † Channel passed only when user tracking is enabled
+<dd>List of hooks you can use with irc:hook. The parameter list describes the parameters passed to the callback function. <ul> <li><code>PreRegister(connection)</code>Useful for CAP commands and SASL.</li> <li><code>OnRaw(line) - (any non false/nil return value assumes line handled and will not be further processed)</code></li> <li><code>OnSend(line)</code></li> <li><code>OnDisconnect(message, errorOccurred)</code></li> <li><code>OnChat(user, channel, message)</code></li> <li><code>OnNotice(user, channel, message)</code></li> <li><code>OnJoin(user, channel)</code>*</li> <li><code>OnPart(user, channel)</code>*</li> <li><code>OnQuit(user, message)</code></li> <li><code>NickChange(user, newnick, channel)</code>*†</li> <li><code>NameList(channel, names)</code></li> <li><code>OnTopic(channel, topic)</code></li> <li><code>OnTopicInfo(channel, creator, timeCreated)</code></li> <li><code>OnKick(channel, nick, kicker, reason)</code>* (kicker is a <code>user</code> table)</li> <li><code>OnUserMode(modes)</code></li> <li><code>OnChannelMode(user, channel, modes)</code></li> <li><code>OnModeChange(user, target, modes, ...)</code>* ('...' contains mode options such as banmasks)</li> </ul> * Event also invoked for yourself. † Channel passed only when user tracking is enabled
 
 
 
@@ -632,7 +628,7 @@ Returns a new <code>irc</code> object.
 
 
 <dt><a name="User"></a><strong>User</strong></dt>
-<dd>Table with information about a user. <ul> <li><code>nick</code> - User nickname. Always present.</li> <li><code>username</code> - User username.</li> <li><code>host</code> - User hostname.</li> <li><code>realname</code> - User real name.</li> <li><code>access</code> - User access, available in channel-oriented callbacks. Can be '+', '@', and others, depending on the server.</li> </ul> Apart from <code>nick</code>, fields may be missing. To fill them in, enable user tracking and use irc:whois.
+<dd>Table with information about a user. <ul> <li><code>nick</code> - User nickname. Always present.</li> <li><code>username</code> - User username.</li> <li><code>host</code> - User hostname.</li> <li><code>realname</code> - User real name.</li> <li><code>access</code> - User access, available in channel-oriented callbacks. A table containing the boolean fields 'op', 'halfop', and 'voice'.</li> </ul> Apart from <code>nick</code>, fields may be missing. To fill them in, enable user tracking and use irc:whois.
 
 
 
