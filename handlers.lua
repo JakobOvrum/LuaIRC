@@ -32,7 +32,7 @@ handlers["JOIN"] = function(conn, msg)
 		if msg.user.nick == conn.nick then
 			conn.channels[channel] = {users = {}}
 		else
-			conn.channels[channel].users[msg.user.nick] = user
+			conn.channels[channel].users[msg.user.nick] = msg.user
 		end
 	end
 
