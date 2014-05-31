@@ -2,6 +2,7 @@ local assert = assert
 local setmetatable = setmetatable
 local unpack = unpack
 local pairs = pairs
+local insert = table.insert
 
 module "irc"
 
@@ -17,6 +18,18 @@ function Message(cmd, args)
 	}, msg_meta)
 end
 
+local tag_escapes = {
+	[";"] = "\\:",
+	[" "] = "\\s",
+	["\0"] = "\\0",
+	["\\"] = "\\\\",
+	["\r"] = "\\r",
+	["\n"] = "\\n",
+}
+
+local tag_unescapes = {}
+for x, y in pairs(tag_escapes) do tag_unescapes[y] = x end
+
 function msg_meta:toRFC1459()
 	s = ""
 
@@ -25,10 +38,7 @@ function msg_meta:toRFC1459()
 		for key, value in pairs(self.tags) do
 			s = s..key
 			if value ~= true then
-				assert(not value:find("[%z\07\r\n; ]"),
-					"NUL, BELL, CR, LF, semicolon, and"
-					.." space are not allowed in RFC1459"
-					.." formated tag values.")
+				value = value:gsub("[; %z\\\r\n]", tag_escapes)
 				s = s.."="..value
 			end
 			s = s..";"
@@ -57,6 +67,55 @@ function msg_meta:toRFC1459()
 	end
 
 	return s
+end
+
+local function parsePrefix(prefix)
+	local user = {}
+	user.nick, user.username, user.host = prefix:match("^(.+)!(.+)@(.+)$")
+	if not user.nick and prefix:find(".", 1, true) then
+		user.server = prefix
+	end
+	return user
+end
+
+function msg_meta:fromRFC1459(line)
+	-- IRCv3 tags
+	if line:sub(1, 1) == "@" then
+		self.tags = {}
+		local space = line:find(" ", 1, true)
+		-- For each semicolon-delimited section from after
+		-- the @ character to before the space character.
+		for tag in line:sub(2, space - 1):gmatch("([^;]+)") do
+			local eq = tag:find("=", 1, true)
+			if eq then
+				self.tags[tag:sub(1, eq - 1)] =
+					tag:sub(eq + 1):gsub("\\([:s0\\rn])", tag_unescapes)
+			else
+				self.tags[tag] = true
+			end
+		end
+		line = line:sub(space + 1)
+	end
+
+	if line:sub(1, 1) == ":" then
+		local space = line:find(" ", 1, true)
+		self.prefix = line:sub(2, space - 1)
+		self.user = parsePrefix(self.prefix)
+		line = line:sub(space + 1)
+	end
+
+	local pos
+	self.command, pos = line:match("(%S+)()")
+	line = line:sub(pos)
+
+	for pos, param in line:gmatch("()(%S+)") do
+		if param:sub(1, 1) == ":" then
+			param = line:sub(pos + 1)
+			insert(self.args, param)
+			break
+		end
+		insert(self.args, param)
+	end
 end
 
 function msgs.privmsg(to, text)
@@ -135,9 +194,9 @@ end
 function msgs.mode(target, modes)
 	-- We have to split the modes parameter because the mode string and
 	-- each parameter are seperate arguments (The first command is incorrect)
-	--   MODE :+ov Nick1 Nick2
-	--   MODE +ov Nick1 Nick2
-	mt = split(modes)
+	--   MODE foo :+ov Nick1 Nick2
+	--   MODE foo +ov Nick1 Nick2
+	local mt = split(modes)
 	return Message("MODE", {target, unpack(mt)})
 end
 

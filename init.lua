@@ -178,7 +178,9 @@ function meta:think()
 		local line = getline(self, 3)
 		if line and #line > 0 then
 			if not self:invoke("OnRaw", line) then
-				self:handle(parse(line))
+				local msg = Message()
+				msg:fromRFC1459(line)
+				self:handle(msg)
 			end
 		else
 			break
@@ -227,7 +229,8 @@ function meta:whois(nick)
 	while true do
 		local line = getline(self, 3)
 		if line then
-			local msg = parse(line)
+			local msg = Message()
+			msg:fromRFC1249(line)
 
 			local handler = whoisHandlers[msg.command]
 			if handler then

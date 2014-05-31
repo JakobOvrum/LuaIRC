@@ -10,49 +10,6 @@ local random = math.random
 
 module "irc"
 
--- Protocol parsing
-function parse(line)
-	local msg = Message()
-
-	-- IRCv3 tags
-	if line:sub(1, 1) == "@" then
-		msg.tags = {}
-		local space = line:find(" ", 1, true)
-		-- For each semicolon-delimited section from after
-		-- the @ character to before the space character.
-		for tag in line:sub(2, space - 1):gmatch("([^;]+)") do
-			local eq = tag:find("=", 1, true)
-			if eq then
-				msg.tags[tag:sub(1, eq - 1)] = tag:sub(eq + 1)
-			else
-				msg.tags[tag] = true
-			end
-		end
-		line = line:sub(space + 1)
-	end
-
-	if line:sub(1, 1) == ":" then
-		local space = line:find(" ", 1, true)
-		msg.prefix = line:sub(2, space - 1)
-		msg.user = parsePrefix(msg.prefix)
-		line = line:sub(space + 1)
-	end
-
-	local pos
-	msg.command, pos = line:match("(%S+)()")
-	line = line:sub(pos)
-
-	for pos, param in line:gmatch("()(%S+)") do
-		if param:sub(1, 1) == ":" then
-			param = line:sub(pos + 1)
-			table.insert(msg.args, param)
-			break
-		end
-		table.insert(msg.args, param)
-	end
-
-	return msg
-end
 
 function parseNick(conn, nick)
 	local access = {}
@@ -71,15 +28,6 @@ function parseNick(conn, nick)
 	access.voice = access.v
 	local name = nick:sub(namestart)
 	return access, name
-end
-
-function parsePrefix(prefix)
-	local user = {}
-	user.nick, user.username, user.host = prefix:match("^(.+)!(.+)@(.+)$")
-	if not user.nick and prefix:find(".", 1, true) then
-		user.server = prefix
-	end
-	return user
 end
 
 function updatePrefixModes(conn)
