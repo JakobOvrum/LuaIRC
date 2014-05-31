@@ -125,17 +125,17 @@ function meta_preconnect:connect(_host, _port)
 	self.socket = s
 	setmetatable(self, meta)
 
-	self:queue(Message("CAP", {"REQ", "multi-prefix"}))
+	self:queue(Message({command="CAP", args={"REQ", "multi-prefix"}}))
 
 	self:invoke("PreRegister", self)
-	self:queue(Message("CAP", {"END"}))
+	self:queue(Message({command="CAP", args={"END"}}))
 
 	if password then
-		self:queue(Message("PASS", {password}))
+		self:queue(Message({command="PASS", args={password}}))
 	end
 
 	self:queue(msgs.nick(self.nick))
-	self:queue(Message("USER", {self.username, "0", "*", self.realname}))
+	self:queue(Message({command="USER", args={self.username, "0", "*", self.realname}}))
 
 	self.channels = {}
 
@@ -178,9 +178,7 @@ function meta:think()
 		local line = getline(self, 3)
 		if line and #line > 0 then
 			if not self:invoke("OnRaw", line) then
-				local msg = Message()
-				msg:fromRFC1459(line)
-				self:handle(msg)
+				self:handle(Message({raw=line}))
 			end
 		else
 			break
@@ -229,8 +227,7 @@ function meta:whois(nick)
 	while true do
 		local line = getline(self, 3)
 		if line then
-			local msg = Message()
-			msg:fromRFC1249(line)
+			local msg = Message({raw=line})
 
 			local handler = whoisHandlers[msg.command]
 			if handler then

@@ -11,11 +11,13 @@ msgs = {}
 local msg_meta = {}
 msg_meta.__index = msg_meta
 
-function Message(cmd, args)
-	return setmetatable({
-		command = cmd,
-		args = args or {},
-	}, msg_meta)
+function Message(opts)
+	opts = opts or {}
+	setmetatable(opts, msg_meta)
+	if opts.raw then
+		opts:fromRFC1459(opts.raw)
+	end
+	return opts
 end
 
 local tag_escapes = {
@@ -108,6 +110,7 @@ function msg_meta:fromRFC1459(line)
 	self.command, pos = line:match("(%S+)()")
 	line = line:sub(pos)
 
+	self.args = self.args or {}
 	for pos, param in line:gmatch("()(%S+)") do
 		if param:sub(1, 1) == ":" then
 			param = line:sub(pos + 1)
@@ -119,15 +122,15 @@ function msg_meta:fromRFC1459(line)
 end
 
 function msgs.privmsg(to, text)
-	return Message("PRIVMSG", {to, text})
+	return Message({command="PRIVMSG", args={to, text}})
 end
 
 function msgs.notice(to, text)
-	return Message("NOTICE", {to, text})
+	return Message({command="NOTICE", args={to, text}})
 end
 
 function msgs.action(to, text)
-	return Message("PRIVMSG", {to, ("\x01ACTION %s\x01"):format(text)})
+	return Message({command="PRIVMSG", args={to, ("\x01ACTION %s\x01"):format(text)}})
 end
 
 function msgs.ctcp(command, to, args)
@@ -136,27 +139,27 @@ function msgs.ctcp(command, to, args)
 		s = ' '..args
 	end
 	s = s..'\x01'
-	return Message("PRIVMSG", {to, s})
+	return Message({command="PRIVMSG", args={to, s}})
 end
 
 function msgs.kick(channel, target, reason)
-	return Message("KICK", {channel, target, reason})
+	return Message({command="KICK", args={channel, target, reason}})
 end
 
 function msgs.join(channel, key)
-	return Message("JOIN", {channel, key})
+	return Message({command="JOIN", args={channel, key}})
 end
 
 function msgs.part(channel, reason)
-	return Message("PART", {channel, reason})
+	return Message({command="PART", args={channel, reason}})
 end
 
 function msgs.quit(reason)
-	return Message("QUIT", {reason})
+	return Message({command="QUIT", args={reason}})
 end
 
 function msgs.kill(target, reason)
-	return Message("KILL", {target, reason})
+	return Message({command="KILL", args={target, reason}})
 end
 
 function msgs.kline(time, mask, reason, operreason)
@@ -166,7 +169,7 @@ function msgs.kline(time, mask, reason, operreason)
 	else
 		args = {mask, reason..'|'..operreason}
 	end
-	return Message("KLINE", args)
+	return Message({command="KLINE", args=args})
 end
 
 function msgs.whois(nick, server)
@@ -176,19 +179,19 @@ function msgs.whois(nick, server)
 	else
 		args = {nick}
 	end
-	return Message("WHOIS", args)
+	return Message({command="WHOIS", args=args})
 end
 
 function msgs.topic(channel, text)
-	return Message("TOPIC", {channel, text})
+	return Message({command="TOPIC", args={channel, text}})
 end
 
 function msgs.invite(channel, target)
-	return Message("INVITE", {channel, target})
+	return Message({command="INVITE", args={channel, target}})
 end
 
 function msgs.nick(nick)
-	return Message("NICK", {nick})
+	return Message({command="NICK", args={nick}})
 end
 
 function msgs.mode(target, modes)
@@ -197,6 +200,6 @@ function msgs.mode(target, modes)
 	--   MODE foo :+ov Nick1 Nick2
 	--   MODE foo +ov Nick1 Nick2
 	local mt = split(modes)
-	return Message("MODE", {target, unpack(mt)})
+	return Message({command="MODE", args={target, unpack(mt)}})
 end
 

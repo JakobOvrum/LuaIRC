@@ -127,21 +127,20 @@ function irc:shutdown()
 -- @name Connection
 -- @class table
 
---- Class representing an IRC message.  Objects of this class may contain the following fields:
--- <ul>
--- <li><code>tags</code> - A table of IRCv3 tags.</li>
--- <li><code>prefix</code> - Prefix of the message.</li>
--- <li><code>user</code> - A User object describing the sender of the message.</li>
--- <li><code>command</code> - The IRC command.</li>
--- <li><code>args</code> - A list of the command arguments.</li>
--- </ul>
--- Fields may be missing.  The only guarantee is that <code>args</code> is a table.
--- Messages have the following methods:
--- <ul>
--- <li><code>toRFC1459()</code></li>
--- </ul>
+--- Class representing an IRC message.
 -- @name Message
 -- @class table
+-- @field args A list of the command arguments
+-- @field command The IRC command
+-- @field prefix The prefix of the message
+-- @field raw A raw IRC line for this message
+-- @field tags A table of IRCv3 tags
+-- @field user A User object describing the sender of the message
+-- Fields may be missing.
+-- Messages have the following methods:
+-- <ul>
+-- <li><code>toRFC1459()</code> - Returns the message serialized in RFC 1459 format.</li>
+-- </ul>
 
 --- List of hooks you can use with irc:hook.
 -- The parameter list describes the parameters passed to the callback function.
