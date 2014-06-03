@@ -1,17 +1,11 @@
-local assert = assert
-local setmetatable = setmetatable
-local unpack = unpack
-local pairs = pairs
-local insert = table.insert
 
-module "irc"
-
-msgs = {}
+-- Module table
+local m = {}
 
 local msg_meta = {}
 msg_meta.__index = msg_meta
 
-function Message(opts)
+local function Message(opts)
 	opts = opts or {}
 	setmetatable(opts, msg_meta)
 	if opts.raw then
@@ -19,6 +13,8 @@ function Message(opts)
 	end
 	return opts
 end
+
+m.Message = Message
 
 local tag_escapes = {
 	[";"] = "\\:",
@@ -33,7 +29,7 @@ local tag_unescapes = {}
 for x, y in pairs(tag_escapes) do tag_unescapes[y] = x end
 
 function msg_meta:toRFC1459()
-	s = ""
+	local s = ""
 
 	if self.tags then
 		s = s.."@"
@@ -52,7 +48,7 @@ function msg_meta:toRFC1459()
 
 	s = s..self.command
 
-	argnum = #self.args
+	local argnum = #self.args
 	for i = 1, argnum do
 		local arg = self.args[i]
 		local startsWithColon = (arg:sub(1, 1) == ":")
@@ -114,26 +110,26 @@ function msg_meta:fromRFC1459(line)
 	for pos, param in line:gmatch("()(%S+)") do
 		if param:sub(1, 1) == ":" then
 			param = line:sub(pos + 1)
-			insert(self.args, param)
+			table.insert(self.args, param)
 			break
 		end
-		insert(self.args, param)
+		table.insert(self.args, param)
 	end
 end
 
-function msgs.privmsg(to, text)
+function m.privmsg(to, text)
 	return Message({command="PRIVMSG", args={to, text}})
 end
 
-function msgs.notice(to, text)
+function m.notice(to, text)
 	return Message({command="NOTICE", args={to, text}})
 end
 
-function msgs.action(to, text)
+function m.action(to, text)
 	return Message({command="PRIVMSG", args={to, ("\x01ACTION %s\x01"):format(text)}})
 end
 
-function msgs.ctcp(command, to, args)
+function m.ctcp(command, to, args)
 	s = "\x01"..command
 	if args then
 		s = ' '..args
@@ -142,27 +138,27 @@ function msgs.ctcp(command, to, args)
 	return Message({command="PRIVMSG", args={to, s}})
 end
 
-function msgs.kick(channel, target, reason)
+function m.kick(channel, target, reason)
 	return Message({command="KICK", args={channel, target, reason}})
 end
 
-function msgs.join(channel, key)
+function m.join(channel, key)
 	return Message({command="JOIN", args={channel, key}})
 end
 
-function msgs.part(channel, reason)
+function m.part(channel, reason)
 	return Message({command="PART", args={channel, reason}})
 end
 
-function msgs.quit(reason)
+function m.quit(reason)
 	return Message({command="QUIT", args={reason}})
 end
 
-function msgs.kill(target, reason)
+function m.kill(target, reason)
 	return Message({command="KILL", args={target, reason}})
 end
 
-function msgs.kline(time, mask, reason, operreason)
+function m.kline(time, mask, reason, operreason)
 	local args = nil
 	if time then
 		args = {time, mask, reason..'|'..operreason}
@@ -172,7 +168,7 @@ function msgs.kline(time, mask, reason, operreason)
 	return Message({command="KLINE", args=args})
 end
 
-function msgs.whois(nick, server)
+function m.whois(nick, server)
 	local args = nil
 	if server then
 		args = {server, nick}
@@ -182,24 +178,26 @@ function msgs.whois(nick, server)
 	return Message({command="WHOIS", args=args})
 end
 
-function msgs.topic(channel, text)
+function m.topic(channel, text)
 	return Message({command="TOPIC", args={channel, text}})
 end
 
-function msgs.invite(channel, target)
+function m.invite(channel, target)
 	return Message({command="INVITE", args={channel, target}})
 end
 
-function msgs.nick(nick)
+function m.nick(nick)
 	return Message({command="NICK", args={nick}})
 end
 
-function msgs.mode(target, modes)
+function m.mode(target, modes)
 	-- We have to split the modes parameter because the mode string and
 	-- each parameter are seperate arguments (The first command is incorrect)
 	--   MODE foo :+ov Nick1 Nick2
 	--   MODE foo +ov Nick1 Nick2
-	local mt = split(modes)
+	local mt = util.split(modes)
 	return Message({command="MODE", args={target, unpack(mt)}})
 end
+
+return m
 

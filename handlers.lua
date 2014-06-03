@@ -1,15 +1,11 @@
-local pairs = pairs
-local error = error
-local tonumber = tonumber
-local table = table
-local unpack = unpack
+local util = require("irc.util")
+local msgs = require("irc.messages")
+local Message = msgs.Message
 
-module "irc"
-
-handlers = {}
+local handlers = {}
 
 handlers["PING"] = function(conn, msg)
-	conn:send(Message("PONG", msg.args))
+	conn:send(Message({command="PONG", args=msg.args}))
 end
 
 handlers["001"] = function(conn, msg)
@@ -127,7 +123,7 @@ handlers["353"] = function(conn, msg)
 
 		local users = conn.channels[channel].users
 		for nick in names:gmatch("(%S+)") do
-			local access, name = parseNick(conn, nick)
+			local access, name = util.parseNick(conn, nick)
 			users[name] = {access = access}
 		end
 	end
@@ -184,15 +180,17 @@ handlers["MODE"] = function(conn, msg)
 	if conn.track_users and target ~= conn.nick then
 		local add = true
 		local argNum = 1
-		updatePrefixModes(conn)
+		util.updatePrefixModes(conn)
 		for c in modes:gmatch(".") do
 			if     c == "+" then add = true
 			elseif c == "-" then add = false
 			elseif conn.modeprefix[c] then
 				local nick = optList[argNum]
 				argNum = argNum + 1
-				local access = conn.channels[target].users[nick].access
-				access[conn.modeprefix[c]] = add
+				local user = conn.channels[target].users[nick]
+				user.access = user.access or {}
+				local access = user.access
+				access[c] = add
 				if     c == "o" then access.op = add
 				elseif c == "v" then access.voice = add
 				end
@@ -207,4 +205,6 @@ handlers["ERROR"] = function(conn, msg)
 	conn:shutdown()
 	error(msg.args[1], 3)
 end
+
+return handlers
 

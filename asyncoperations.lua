@@ -1,13 +1,6 @@
-local table = table
-local assert = assert
-local error = error
-local select = select
-local pairs = pairs
-local type = type
+local msgs = require("irc.messages")
 
-module "irc"
-
-local meta = _META
+local meta = {}
 
 function meta:send(msg, ...)
 	if type(msg) == "table" then
@@ -94,4 +87,6 @@ function meta:setMode(t)
 
 	self:queue(msgs.mode(verify(target, 3), mode))
 end
+
+return meta
 

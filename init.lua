@@ -1,27 +1,15 @@
-local socket = require "socket"
-
-local error = error
-local setmetatable = setmetatable
-local rawget = rawget
-local unpack = unpack
-local pairs = pairs
-local assert = assert
-local require = require
-local tonumber = tonumber
-local type = type
-local pcall = pcall
-local remove = table.remove
-
-module "irc"
+local socket = require("socket")
+local util = require("irc.util")
+local handlers = require("irc.handlers")
+local msgs = require("irc.messages")
+local Message = msgs.Message
 
 local meta = {}
 meta.__index = meta
-_META = meta
 
-require "irc.util"
-require "irc.asyncoperations"
-require "irc.handlers"
-require "irc.messages"
+for k, v in pairs(require("irc.asyncoperations")) do
+	meta[k] = v
+end
 
 local meta_preconnect = {}
 function meta_preconnect.__index(o, k)
@@ -38,7 +26,7 @@ function new(data)
 		nick = assert(data.nick, "Field 'nick' is required");
 		username = data.username or "lua";
 		realname = data.realname or "Lua owns";
-		nickGenerator = data.nickGenerator or defaultNickGenerator;
+		nickGenerator = data.nickGenerator or util.defaultNickGenerator;
 		hooks = {};
 		track_users = true;
 		supports = {};
@@ -46,7 +34,7 @@ function new(data)
 		lastThought = 0;
 		recentMessages = 0;
 	}
-	assert(checkNick(o.nick), "Erroneous nickname passed to irc.new")
+	assert(util.checkNick(o.nick), "Erroneous nickname passed to irc.new")
 	return setmetatable(o, meta_preconnect)
 end
 
@@ -116,7 +104,7 @@ function meta_preconnect:connect(_host, _port)
 		end
 
 		s = ssl.wrap(s, params)
-		success, errmsg = s:dohandshake()
+		local success, errmsg = s:dohandshake()
 		if not success then
 			error(("could not make secure connection: %s"):format(errmsg), 2)
 		end
@@ -195,20 +183,18 @@ function meta:think()
 		if self.recentMessages > 4 then
 			break
 		end
-		self:send(remove(self.messageQueue, 1))
+		self:send(table.remove(self.messageQueue, 1))
 		self.recentMessages = self.recentMessages + 1
 	end
 	self.lastThought = socket.gettime()
 end
-
-local handlers = handlers
 
 function meta:handle(msg)
 	local handler = handlers[msg.command]
 	if handler then
 		handler(self, msg)
 	end
-	self:invoke("Do"..capitalize(msg.command), msg)
+	self:invoke("Do" .. util.capitalize(msg.command), msg)
 end
 
 local whoisHandlers = {
@@ -232,7 +218,7 @@ function meta:whois(nick)
 			local handler = whoisHandlers[msg.command]
 			if handler then
 				result[handler] = msg.args
-			elseif cmd == "318" then
+			elseif msg.command == "318" then
 				break
 			else
 				self:handle(msg)
@@ -252,4 +238,15 @@ end
 function meta:topic(channel)
 	self:queue(msgs.topic(channel))
 end
+
+return {
+	new = new;
+
+	Message = Message;
+	msgs = msgs;
+
+	color = util.color;
+	bold = util.bold;
+	underline = util.underline;
+}
 
