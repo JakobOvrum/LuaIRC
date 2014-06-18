@@ -72,7 +72,7 @@ handlers["NICK"] = function(conn, msg)
 		conn:invoke("NickChange", msg.user, newNick)
 	end
 	if msg.user.nick == conn.nick then
-		conn.nick = newnick
+		conn.nick = newNick
 	end
 end
 
