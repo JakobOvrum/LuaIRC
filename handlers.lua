@@ -87,6 +87,13 @@ handlers["432"] = needNewNick
 -- ERR_NICKNAMEINUSE
 handlers["433"] = needNewNick
 
+-- ERR_UNAVAILRESOURCE
+handlers["437"] = function(conn, msg)
+	if not conn.authed then
+		needNewNick(conn, msg)
+	end
+end
+
 -- RPL_ISUPPORT
 handlers["005"] = function(conn, msg)
 	local arglen = #msg.args
