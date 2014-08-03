@@ -90,6 +90,13 @@ handlers["432"] = needNewNick
 -- ERR_NICKNAMEINUSE
 handlers["433"] = needNewNick
 
+-- ERR_UNAVAILRESOURCE
+handlers["437"] = function(o, prefix, target, badnick)
+	if not o.authed then
+		needNewNick(o, prefix, target, badnick)
+	end
+end
+
 --NAMES list
 handlers["353"] = function(o, prefix, me, chanType, channel, names)
 	if o.track_users then
