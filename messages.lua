@@ -199,5 +199,9 @@ function m.mode(target, modes)
 	return Message({command="MODE", args={target, unpack(mt)}})
 end
 
+function m.cap(cmd, ...)
+	return Message({command="CAP", args={cmd, ...}})
+end
+
 return m
 

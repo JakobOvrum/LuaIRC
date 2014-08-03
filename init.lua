@@ -7,6 +7,7 @@ local Message = msgs.Message
 local meta = {}
 meta.__index = meta
 
+
 for k, v in pairs(require("irc.asyncoperations")) do
 	meta[k] = v
 end
@@ -33,6 +34,9 @@ function new(data)
 		messageQueue = {};
 		lastThought = 0;
 		recentMessages = 0;
+		availableCapabilities = {};
+		wantedCapabilities = {};
+		capabilities = {};
 	}
 	assert(util.checkNick(o.nick), "Erroneous nickname passed to irc.new")
 	return setmetatable(o, meta_preconnect)
@@ -61,8 +65,9 @@ function meta:invoke(name, ...)
 	local hooks = self.hooks[name]
 	if hooks then
 		for id, f in pairs(hooks) do
-			if f(...) then
-				return true
+			local ret = f(...)
+			if ret then
+				return ret
 			end
 		end
 	end
@@ -113,10 +118,7 @@ function meta_preconnect:connect(_host, _port)
 	self.socket = s
 	setmetatable(self, meta)
 
-	self:queue(Message({command="CAP", args={"REQ", "multi-prefix"}}))
-
 	self:invoke("PreRegister", self)
-	self:queue(Message({command="CAP", args={"END"}}))
 
 	if password then
 		self:queue(Message({command="PASS", args={password}}))
