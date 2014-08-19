@@ -1,5 +1,6 @@
 local table = table
 local assert = assert
+local error = error
 local select = select
 local pairs = pairs
 
