@@ -142,6 +142,7 @@ function irc:shutdown()
 -- <li><code>OnUserMode(modes)</code></li>
 -- <li><code>OnChannelMode(user, channel, modes)</code></li>
 -- <li><code>OnModeChange(user, target, modes, ...)</code>* ('...' contains mode options such as banmasks)</li>
+-- <li><code>DoX(user, ...)</code>'X' is any IRC command or numeric with the first letter capitalized (eg, DoPing and Do001)</li>
 -- </ul>
 -- * Event also invoked for yourself.
 -- † Channel passed only when user tracking is enabled
@@ -154,7 +155,7 @@ function irc:shutdown()
 -- <li><code>username</code> - User username.</li>
 -- <li><code>host</code> - User hostname.</li>
 -- <li><code>realname</code> - User real name.</li>
--- <li><code>access</code> - User access, available in channel-oriented callbacks. A table containing the boolean fields 'op', 'halfop', and 'voice'.</li>
+-- <li><code>access</code> - User access, available in channel-oriented callbacks. A table containing boolean fields for each access mode that the server supports. Eg: 'o', and 'v'.</li>
 -- </ul>
 -- Apart from <code>nick</code>, fields may be missing. To fill them in, enable user tracking and use irc:whois.
 -- @name User

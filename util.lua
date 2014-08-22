@@ -50,29 +50,51 @@ function parse(line)
 	return prefix, cmd, params
 end
 
-function parseNick(nick)
-	local access, name = nick:match("^([%+@]*)(.+)$")
-	return parseAccess(access or ""), name
+function parseNick(conn, nick)
+	local access = {}
+	updatePrefixModes(conn)
+	local namestart = 1
+	for i = 1, #nick - 1 do
+		local c = nick:sub(i, i)
+		if conn.prefixmode[c] then
+			access[conn.prefixmode[c]] = true
+		else
+			namestart = i
+			break
+		end
+	end
+	access.op = access.o
+	access.voice = access.v
+	local name = nick:sub(namestart)
+	return access, name
 end
 
 function parsePrefix(prefix)
 	local user = {}
 	if prefix then
-		user.access, user.nick, user.username, user.host = prefix:match("^([%+@]*)(.+)!(.+)@(.+)$")
+		user.nick, user.username, user.host = prefix:match("^(.+)!(.+)@(.+)$")
 	end
-	user.access = parseAccess(user.access or "")
 	return user
 end
 
-function parseAccess(accessString)
-	local access = {op = false, halfop = false, voice = false}
-	for c in accessString:gmatch(".") do
-		if     c == "@" then access.op = true
-		elseif c == "%" then access.halfop = true
-		elseif c == "+" then access.voice = true
-		end
+function updatePrefixModes(conn)
+	if conn.prefixmode and conn.modeprefix then
+		return
 	end
-	return access
+	conn.prefixmode = {}
+	conn.modeprefix = {}
+	if conn.supports.PREFIX then
+		local modes, prefixes = conn.supports.PREFIX:match("%(([^%)]*)%)(.*)")
+		for i = 1, #modes do
+			conn.prefixmode[prefixes:sub(i, i)] =    modes:sub(i, i)
+			conn.modeprefix[   modes:sub(i, i)] = prefixes:sub(i, i)
+		end
+	else
+		conn.prefixmode['@'] = 'o'
+		conn.prefixmode['+'] = 'v'
+		conn.modeprefix['o'] = '@'
+		conn.modeprefix['v'] = '+'
+	end
 end
 
 --mIRC markup scheme (de-facto standard)
@@ -132,5 +154,11 @@ function defaultNickGenerator(nick)
 	local last = sub(nick, randindex + 1, #nick)
 	nick = first..char(b)..last  -- Insert the new charachter
 	return nick
+end
+
+function capitalize(text)
+  -- Converts first character to upercase and the rest to lowercase.
+  -- "PING" -> "Ping" | "hello" -> "Hello" | "123" -> "123"
+  return text:sub(1, 1):upper()..text:sub(2):lower()
 end
 
