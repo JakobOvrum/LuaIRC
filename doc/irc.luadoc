@@ -130,6 +130,7 @@ function irc:shutdown()
 -- @name Connection
 -- @class table
 -- @field authed Boolean indicating whether the connection has completed registration.
+-- @field connected Whether the connection is currently connected.
 -- @field motd The server's message of the day.  Can be nil.
 -- @field nick The current nickname.
 -- @field realname The real name sent to the server.

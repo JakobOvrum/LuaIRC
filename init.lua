@@ -16,11 +16,14 @@ local meta_preconnect = {}
 function meta_preconnect.__index(o, k)
 	local v = rawget(meta_preconnect, k)
 
-	if not v and meta[k] then
+	if v == nil and meta[k] ~= nil then
 		error(("field '%s' is not accessible before connecting"):format(k), 2)
 	end
 	return v
 end
+
+meta.connected = true
+meta_preconnect.connected = false
 
 function new(data)
 	local o = {
@@ -148,7 +151,7 @@ end
 
 function meta:shutdown()
 	self.socket:close()
-	setmetatable(self, nil)
+	setmetatable(self, meta_preconnect)
 end
 
 local function getline(self, errlevel)
