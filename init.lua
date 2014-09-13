@@ -17,9 +17,11 @@ local meta = {}
 meta.__index = meta
 _META = meta
 
-require "irc.util"
-require "irc.asyncoperations"
-require "irc.handlers"
+local path = ({...})[1]:gsub("[%.\\/]init$", "") .. '.'
+
+require(path .. "util")
+require(path .. "asyncoperations")
+require(path .. "handlers")
 
 local meta_preconnect = {}
 function meta_preconnect.__index(o, k)
