@@ -90,6 +90,17 @@ handlers["432"] = needNewNick
 -- ERR_NICKNAMEINUSE
 handlers["433"] = needNewNick
 
+-- RPL_MOTDSTART
+handlers["375"] = function(o, prefix, info)
+	o.motd = ""
+end
+
+-- RPL_MOTD
+handlers["372"] = function(o, prefix, nick, line)
+	-- MOTD lines have a "- " prefix, strip it.
+	o.motd = o.motd..line:sub(3)..'\n'
+end
+
 --NAMES list
 handlers["353"] = function(o, prefix, me, chanType, channel, names)
 	if o.track_users then
