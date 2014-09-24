@@ -134,3 +134,9 @@ function defaultNickGenerator(nick)
 	return nick
 end
 
+function capitalize(text)
+  -- Converts first character to upercase and the rest to lowercase.
+  -- "PING" -> "Ping" | "hello" -> "Hello" | "123" -> "123"
+  return text:sub(1, 1):upper()..text:sub(2):lower()
+end
+
