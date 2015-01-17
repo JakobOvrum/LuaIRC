@@ -8,10 +8,8 @@ local tostring = tostring
 local type = type
 local random = math.random
 
-module "irc"
-
 --protocol parsing
-function parse(line)
+local function parse(line)
 	local prefix
 	local lineStart = 1
 	if line:sub(1,1) == ":" then
@@ -50,21 +48,7 @@ function parse(line)
 	return prefix, cmd, params
 end
 
-function parseNick(nick)
-	local access, name = nick:match("^([%+@]*)(.+)$")
-	return parseAccess(access or ""), name
-end
-
-function parsePrefix(prefix)
-	local user = {}
-	if prefix then
-		user.access, user.nick, user.username, user.host = prefix:match("^([%+@]*)(.+)!(.+)@(.+)$")
-	end
-	user.access = parseAccess(user.access or "")
-	return user
-end
-
-function parseAccess(accessString)
+local function parseAccess(accessString)
 	local access = {op = false, halfop = false, voice = false}
 	for c in accessString:gmatch(".") do
 		if     c == "@" then access.op = true
@@ -75,8 +59,22 @@ function parseAccess(accessString)
 	return access
 end
 
+local function parseNick(nick)
+	local access, name = nick:match("^([%+@]*)(.+)$")
+	return parseAccess(access or ""), name
+end
+
+local function parsePrefix(prefix)
+	local user = {}
+	if prefix then
+		user.access, user.nick, user.username, user.host = prefix:match("^([%+@]*)(.+)!(.+)@(.+)$")
+	end
+	user.access = parseAccess(user.access or "")
+	return user
+end
+
 --mIRC markup scheme (de-facto standard)
-color = {
+local color = {
 	black = 1,
 	blue = 2,
 	green = 3,
@@ -102,20 +100,20 @@ setmetatable(color, {__call = function(_, text, colornum)
 end})
 
 local boldByte = char(2)
-function bold(text)
+local function bold(text)
 	return boldByte..text..boldByte
 end
 
 local underlineByte = char(31)
-function underline(text)
+local function underline(text)
 	return underlineByte..text..underlineByte
 end
 
-function checkNick(nick)
+local function checkNick(nick)
 	return nick:find("^[a-zA-Z_%-%[|%]%^{|}`][a-zA-Z0-9_%-%[|%]%^{|}`]*$") ~= nil
 end
 
-function defaultNickGenerator(nick)
+local function defaultNickGenerator(nick)
 	-- LuaBot -> LuaCot -> LuaCou -> ...
 	-- We change a random charachter rather than appending to the
 	-- nickname as otherwise the new nick could exceed the ircd's
@@ -134,3 +132,15 @@ function defaultNickGenerator(nick)
 	return nick
 end
 
+return {
+	parse = parse;
+	parseNick = parseNick;
+	parsePrefix = parsePrefix;
+	parseAccess = parseAccess;
+
+	color = color;
+	bold = bold;
+	underline = underline;
+	checkNick = checkNick;
+	defaultNickGenerator = defaultNickGenerator;
+}

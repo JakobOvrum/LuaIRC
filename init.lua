@@ -7,19 +7,15 @@ local unpack = unpack
 local pairs = pairs
 local assert = assert
 local require = require
-local tonumber = tonumber
 local type = type
 local pcall = pcall
 
-module "irc"
-
 local meta = {}
 meta.__index = meta
-_META = meta
 
-require "irc.util"
-require "irc.asyncoperations"
-require "irc.handlers"
+local util = require "irc.util"
+for k, v in pairs(require "irc.asyncoperations") do meta[k] = v end
+local handlers = require "irc.handlers"
 
 local meta_preconnect = {}
 function meta_preconnect.__index(o, k)
@@ -31,16 +27,16 @@ function meta_preconnect.__index(o, k)
 	return v
 end
 
-function new(data)
+local function new(data)
 	local o = {
 		nick = assert(data.nick, "Field 'nick' is required");
 		username = data.username or "lua";
 		realname = data.realname or "Lua owns";
-		nickGenerator = data.nickGenerator or defaultNickGenerator;
+		nickGenerator = data.nickGenerator or util.defaultNickGenerator;
 		hooks = {};
 		track_users = true;
 	}
-	assert(checkNick(o.nick), "Erroneous nickname passed to irc.new")
+	assert(util.checkNick(o.nick), "Erroneous nickname passed to irc.new")
 	return setmetatable(o, meta_preconnect)
 end
 
@@ -172,15 +168,13 @@ function meta:think()
 		local line = getline(self, 3)
 		if line and #line > 0 then
 			if not self:invoke("OnRaw", line) then
-				self:handle(parse(line))
+				self:handle(util.parse(line))
 			end
 		else
 			break
 		end
 	end
 end
-
-local handlers = handlers
 
 function meta:handle(prefix, cmd, params)
 	local handler = handlers[cmd]
@@ -205,7 +199,7 @@ function meta:whois(nick)
 	while true do
 		local line = getline(self, 3)
 		if line then
-			local prefix, cmd, args = parse(line)
+			local prefix, cmd, args = util.parse(line)
 
 			local handler = whoisHandlers[cmd]
 			if handler then
@@ -231,3 +225,7 @@ function meta:topic(channel)
 	self:send("TOPIC %s", channel)
 end
 
+return {
+	_META = meta;
+	new = new;
+}
