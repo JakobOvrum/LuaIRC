@@ -133,7 +133,15 @@ handlers["333"] = function(o, prefix, me, channel, nick, time)
 end
 
 handlers["KICK"] = function(o, prefix, channel, kicked, reason)
-	o:invoke("OnKick", channel, kicked, util.parsePrefix(prefix), reason)
+	local user = util.parsePrefix(prefix)
+	if o.track_users then
+		if user.nick == o.nick then
+			o.channels[channel] = nil
+		else
+			o.channels[channel].users[user.nick] = nil
+		end
+	end
+	o:invoke("OnKick", channel, kicked, user, reason)
 end
 
 --RPL_UMODEIS
