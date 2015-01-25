@@ -1,7 +1,7 @@
 --- LuaIRC is a low-level IRC library for Lua.
 -- All functions raise Lua exceptions on error.
 --
--- Use <code>new</code> to create a new IRC object.<br/>
+-- Use <code>new</code> to create a new Connection object.<br/>
 -- Example:<br/><br/>
 --<code>
 --require "irc"<br/>
@@ -24,11 +24,12 @@
 
 module "irc"
 
---- Create a new IRC object. Use <code>irc:connect</code> to connect to a server.
+--- Create a new Connection object. Use <code>irc:connect</code> to connect to a server.
 -- @param user Table with fields <code>nick</code>, <code>username</code> and <code>realname</code>.
 -- The <code>nick</code> field is required.
 --
--- @return Returns a new <code>irc</code> object.
+-- @return Returns a new Connection object.
+-- @see Connection
 function new(user)
 
 --- Hook a function to an event.
@@ -49,7 +50,7 @@ function irc:unhook(name, id)
 function irc:connect(host, port)
 
 -- @param table Table of connection details
--- @see Connection
+-- @see ConnectOptions
 function irc:connect(table)
 
 --- Disconnect <code>irc</code> from the server.
@@ -70,24 +71,28 @@ function irc:whois(nick)
 -- @param channel Channel to query.
 function irc:topic(channel)
 
---- Send a raw line of IRC to the server.
--- @param msg Line to be sent, excluding newline characters.
+--- Send a IRC message to the server.
+-- @param msg Message or raw line to send, excluding newline characters.
 -- @param ... Format parameters for <code>msg</code>, with <code>string.format</code> semantics. [optional]
 function irc:send(msg, ...)
 
+--- Queue Message to be sent to the server.
+-- @param msg Message to be sent.
+function irc:queue(msg)
+
 --- Send a message to a channel or user.
 -- @param target Nick or channel to send to.
--- @param message Message to send.
+-- @param message Message text.
 function irc:sendChat(target, message)
 
 --- Send a notice to a channel or user.
 -- @param target Nick or channel to send to.
--- @param message Notice to send.
+-- @param message Notice text.
 function irc:sendNotice(target, message)
 
 --- Join a channel.
 -- @param channel Channel to join.
--- @param key Channel password. [optional]
+-- @param key Channel key. [optional]
 function irc:join(channel, key)
 
 --- Leave a channel.
@@ -108,25 +113,51 @@ function irc:setMode(t)
 
 --internal
 function irc:invoke(name, ...)
-function irc:handle(prefix, cmd, params)
+function irc:handle(msg)
 function irc:shutdown()
 
 --- Table with connection information.
--- <ul>
--- <li><code>host</code> - Server host name.</li>
--- <li><code>port</code> - Server port. [defaults to <code>6667</code>]</li>
--- <li><code>timeout</code> - Connect timeout. [defaults to <code>30</code>]</li>
--- <li><code>password</code> - Server password.</li>
--- <li><code>secure</code> - Boolean to enable TLS connection, pass a params table (described, [luasec]) to control</li>
--- </ul>
+-- @name ConnectOptions
+-- @class table
+-- @field host Server host name.
+-- @field port Server port. [defaults to <code>6667</code>]
+-- @field timeout Connect timeout. [defaults to <code>30</code>]
+-- @field password Server password.
+-- @field secure Boolean to enable TLS connection, pass a params table (described, [luasec]) to control
 -- [luasec]: http://www.inf.puc-rio.br/~brunoos/luasec/reference.html
+
+--- Class representing a connection.
 -- @name Connection
 -- @class table
+-- @field authed Boolean indicating whether the connection has completed registration.
+-- @field connected Whether the connection is currently connected.
+-- @field motd The server's message of the day.  Can be nil.
+-- @field nick The current nickname.
+-- @field realname The real name sent to the server.
+-- @field username The username/ident sent to the server.
+-- @field socket Raw socket used by the library.
+-- @field supports What the server claims to support in it's ISUPPORT message.
 
---- List of hooks you can use with irc:hook. The parameter list describes the parameters passed to the callback function.
+--- Class representing an IRC message.
+-- @name Message
+-- @class table
+-- @field args A list of the command arguments
+-- @field command The IRC command
+-- @field prefix The prefix of the message
+-- @field raw A raw IRC line for this message
+-- @field tags A table of IRCv3 tags
+-- @field user A User object describing the sender of the message
+-- Fields may be missing.
+-- Messages have the following methods:
 -- <ul>
--- <li><code>PreRegister(connection)</code>Useful for CAP commands and SASL.</li>
--- <li><code>OnRaw(line) - (any non false/nil return value assumes line handled and will not be further processed)</code></li>
+-- <li><code>toRFC1459()</code> - Returns the message serialized in RFC 1459 format.</li>
+-- </ul>
+
+--- List of hooks you can use with irc:hook.
+-- The parameter list describes the parameters passed to the callback function.
+-- <ul>
+-- <li><code>PreRegister()</code> - Usefull for requesting capabilities.</li>
+-- <li><code>OnRaw(line)</code> - Any non false/nil return value assumes line handled and will not be further processed.</li>
 -- <li><code>OnSend(line)</code></li>
 -- <li><code>OnDisconnect(message, errorOccurred)</code></li>
 -- <li><code>OnChat(user, channel, message)</code></li>
@@ -142,6 +173,10 @@ function irc:shutdown()
 -- <li><code>OnUserMode(modes)</code></li>
 -- <li><code>OnChannelMode(user, channel, modes)</code></li>
 -- <li><code>OnModeChange(user, target, modes, ...)</code>* ('...' contains mode options such as banmasks)</li>
+-- <li><code>OnCapabilityList(caps)</code></li>
+-- <li><code>OnCapabilityAvailable(cap, value)</code> Called only when a capability becomes available or changes.</li>
+-- <li><code>OnCapabilitySet(cap, enabled)</code>*</li>
+-- <li><code>DoX(msg)</code>* - 'X' is any IRC command or numeric with the first letter capitalized (eg, DoPing and Do001)</li>
 -- </ul>
 -- * Event also invoked for yourself.
 -- † Channel passed only when user tracking is enabled
@@ -150,12 +185,14 @@ function irc:shutdown()
 
 --- Table with information about a user.
 -- <ul>
--- <li><code>nick</code> - User nickname. Always present.</li>
+-- <li><code>server</code> - Server name.</li>
+-- <li><code>nick</code> - User nickname.</li>
 -- <li><code>username</code> - User username.</li>
 -- <li><code>host</code> - User hostname.</li>
 -- <li><code>realname</code> - User real name.</li>
--- <li><code>access</code> - User access, available in channel-oriented callbacks. A table containing the boolean fields 'op', 'halfop', and 'voice'.</li>
+-- <li><code>access</code> - User access, available in channel-oriented callbacks. A table containing boolean fields for each access mode that the server supports. Eg: 'o', and 'v'.</li>
 -- </ul>
--- Apart from <code>nick</code>, fields may be missing. To fill them in, enable user tracking and use irc:whois.
+-- Fields may be missing. To fill them in, enable user tracking and use irc:whois.
 -- @name User
 -- @class table
+

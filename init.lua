@@ -1,46 +1,47 @@
-local socket = require "socket"
-
-local error = error
-local setmetatable = setmetatable
-local rawget = rawget
-local unpack = unpack
-local pairs = pairs
-local assert = assert
-local require = require
-local tonumber = tonumber
-local type = type
-local pcall = pcall
-
-module "irc"
+local socket = require("socket")
+local util = require("irc.util")
+local handlers = require("irc.handlers")
+local msgs = require("irc.messages")
+local Message = msgs.Message
 
 local meta = {}
 meta.__index = meta
-_META = meta
 
-require "irc.util"
-require "irc.asyncoperations"
-require "irc.handlers"
+
+for k, v in pairs(require("irc.asyncoperations")) do
+	meta[k] = v
+end
 
 local meta_preconnect = {}
 function meta_preconnect.__index(o, k)
 	local v = rawget(meta_preconnect, k)
 
-	if not v and meta[k] then
+	if v == nil and meta[k] ~= nil then
 		error(("field '%s' is not accessible before connecting"):format(k), 2)
 	end
 	return v
 end
+
+meta.connected = true
+meta_preconnect.connected = false
 
 function new(data)
 	local o = {
 		nick = assert(data.nick, "Field 'nick' is required");
 		username = data.username or "lua";
 		realname = data.realname or "Lua owns";
-		nickGenerator = data.nickGenerator or defaultNickGenerator;
+		nickGenerator = data.nickGenerator or util.defaultNickGenerator;
 		hooks = {};
 		track_users = true;
+		supports = {};
+		messageQueue = {};
+		lastThought = 0;
+		recentMessages = 0;
+		availableCapabilities = {};
+		wantedCapabilities = {};
+		capabilities = {};
 	}
-	assert(checkNick(o.nick), "Erroneous nickname passed to irc.new")
+	assert(util.checkNick(o.nick), "Erroneous nickname passed to irc.new")
 	return setmetatable(o, meta_preconnect)
 end
 
@@ -66,9 +67,10 @@ meta_preconnect.unhook = meta.unhook
 function meta:invoke(name, ...)
 	local hooks = self.hooks[name]
 	if hooks then
-		for id,f in pairs(hooks) do
-			if f(...) then
-				return true
+		for id, f in pairs(hooks) do
+			local ret = f(...)
+			if ret then
+				return ret
 			end
 		end
 	end
@@ -110,7 +112,7 @@ function meta_preconnect:connect(_host, _port)
 		end
 
 		s = ssl.wrap(s, params)
-		success, errmsg = s:dohandshake()
+		local success, errmsg = s:dohandshake()
 		if not success then
 			error(("could not make secure connection: %s"):format(errmsg), 2)
 		end
@@ -119,17 +121,14 @@ function meta_preconnect:connect(_host, _port)
 	self.socket = s
 	setmetatable(self, meta)
 
-	self:send("CAP REQ multi-prefix")
-
 	self:invoke("PreRegister", self)
-	self:send("CAP END")
 
 	if password then
-		self:send("PASS %s", password)
+		self:queue(Message({command="PASS", args={password}}))
 	end
 
-	self:send("NICK %s", self.nick)
-	self:send("USER %s 0 * :%s", self.username, self.realname)
+	self:queue(msgs.nick(self.nick))
+	self:queue(Message({command="USER", args={self.username, "0", "*", self.realname}}))
 
 	self.channels = {}
 
@@ -137,7 +136,7 @@ function meta_preconnect:connect(_host, _port)
 
 	repeat
 		self:think()
-		socket.select(nil, nil, 0.1) -- Sleep so that we don't eat CPU
+		socket.sleep(0.1)
 	until self.authed
 end
 
@@ -145,14 +144,14 @@ function meta:disconnect(message)
 	message = message or "Bye!"
 
 	self:invoke("OnDisconnect", message, false)
-	self:send("QUIT :%s", message)
+	self:send(msgs.quit(message))
 
 	self:shutdown()
 end
 
 function meta:shutdown()
 	self.socket:close()
-	setmetatable(self, nil)
+	setmetatable(self, meta_preconnect)
 end
 
 local function getline(self, errlevel)
@@ -172,21 +171,35 @@ function meta:think()
 		local line = getline(self, 3)
 		if line and #line > 0 then
 			if not self:invoke("OnRaw", line) then
-				self:handle(parse(line))
+				self:handle(Message({raw=line}))
 			end
 		else
 			break
 		end
 	end
+
+	-- Handle outgoing message queue
+	local diff = socket.gettime() - self.lastThought
+	self.recentMessages = self.recentMessages - (diff * 2)
+	if self.recentMessages < 0 then
+		self.recentMessages = 0
+	end
+	for i = 1, #self.messageQueue do
+		if self.recentMessages > 4 then
+			break
+		end
+		self:send(table.remove(self.messageQueue, 1))
+		self.recentMessages = self.recentMessages + 1
+	end
+	self.lastThought = socket.gettime()
 end
 
-local handlers = handlers
-
-function meta:handle(prefix, cmd, params)
-	local handler = handlers[cmd]
+function meta:handle(msg)
+	local handler = handlers[msg.command]
 	if handler then
-		return handler(self, prefix, unpack(params))
+		handler(self, msg)
 	end
+	self:invoke("Do" .. util.capitalize(msg.command), msg)
 end
 
 local whoisHandlers = {
@@ -198,22 +211,22 @@ local whoisHandlers = {
 }
 
 function meta:whois(nick)
-	self:send("WHOIS %s", nick)
+	self:send(msgs.whois(nick))
 
 	local result = {}
 
 	while true do
 		local line = getline(self, 3)
 		if line then
-			local prefix, cmd, args = parse(line)
+			local msg = Message({raw=line})
 
-			local handler = whoisHandlers[cmd]
+			local handler = whoisHandlers[msg.command]
 			if handler then
-				result[handler] = args
-			elseif cmd == "318" then
+				result[handler] = msg.args
+			elseif msg.command == "318" then
 				break
 			else
-				self:handle(prefix, cmd, args)
+				self:handle(msg)
 			end
 		end
 	end
@@ -228,6 +241,17 @@ function meta:whois(nick)
 end
 
 function meta:topic(channel)
-	self:send("TOPIC %s", channel)
+	self:queue(msgs.topic(channel))
 end
+
+return {
+	new = new;
+
+	Message = Message;
+	msgs = msgs;
+
+	color = util.color;
+	bold = util.bold;
+	underline = util.underline;
+}
 

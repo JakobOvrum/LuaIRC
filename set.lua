@@ -1,17 +1,10 @@
-local select = require "socket".select
+local select = require("socket").select
 
-local setmetatable = setmetatable
-local insert = table.insert
-local remove = table.remove
-local ipairs = ipairs
-local error = error
-
-module "irc.set"
-
+local m = {}
 local set = {}
 set.__index = set
 
-function new(t)
+function m.new(t)
 	t.connections = {}
 	t.sockets = {}
 	return setmetatable(t, set)
@@ -54,3 +47,6 @@ function set:poll()
 	local read, err = self:select()
 	return err == "timeout" and self.connections or read
 end
+
+return m
+
