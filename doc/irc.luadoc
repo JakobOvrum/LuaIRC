@@ -132,7 +132,7 @@ function irc:shutdown()
 -- <li><code>OnChat(user, channel, message)</code></li>
 -- <li><code>OnNotice(user, channel, message)</code></li>
 -- <li><code>OnJoin(user, channel)</code>*</li>
--- <li><code>OnPart(user, channel)</code>*</li>
+-- <li><code>OnPart(user, channel, reason)</code>*</li>
 -- <li><code>OnQuit(user, message)</code></li>
 -- <li><code>NickChange(user, newnick, channel)</code>*†</li>
 -- <li><code>NameList(channel, names)</code></li>
