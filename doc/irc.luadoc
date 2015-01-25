@@ -135,7 +135,7 @@ function irc:shutdown()
 -- <li><code>OnPart(user, channel, reason)</code>*</li>
 -- <li><code>OnQuit(user, message)</code></li>
 -- <li><code>NickChange(user, newnick, channel)</code>*†</li>
--- <li><code>NameList(channel, names)</code></li>
+-- <li><code>NameList(channel, names, message)</code></li>
 -- <li><code>OnTopic(channel, topic)</code></li>
 -- <li><code>OnTopicInfo(channel, creator, timeCreated)</code></li>
 -- <li><code>OnKick(channel, nick, kicker, reason)</code>* (kicker is a <code>user</code> table)</li>

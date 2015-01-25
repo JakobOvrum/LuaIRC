@@ -106,7 +106,7 @@ end
 --end of NAMES
 handlers["366"] = function(o, prefix, me, channel, msg)
 	if o.track_users then
-		o:invoke("NameList", channel, msg)
+		o:invoke("NameList", channel, o.channels[channel].users, msg)
 	end
 end
 
