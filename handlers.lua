@@ -3,9 +3,9 @@ local error = error
 local tonumber = tonumber
 local table = table
 
-module "irc"
+local util = require "irc.util"
 
-handlers = {}
+local handlers = {}
 
 handlers["PING"] = function(o, prefix, query)
 	o:send("PONG :%s", query)
@@ -17,15 +17,15 @@ handlers["001"] = function(o, prefix, me)
 end
 
 handlers["PRIVMSG"] = function(o, prefix, channel, message)
-	o:invoke("OnChat", parsePrefix(prefix), channel, message)
+	o:invoke("OnChat", util.parsePrefix(prefix), channel, message)
 end
 
 handlers["NOTICE"] = function(o, prefix, channel, message)
-	o:invoke("OnNotice", parsePrefix(prefix), channel, message)
+	o:invoke("OnNotice", util.parsePrefix(prefix), channel, message)
 end
 
 handlers["JOIN"] = function(o, prefix, channel)
-	local user = parsePrefix(prefix)
+	local user = util.parsePrefix(prefix)
 	if o.track_users then
 		if user.nick == o.nick then
 			o.channels[channel] = {users = {}}
@@ -38,7 +38,7 @@ handlers["JOIN"] = function(o, prefix, channel)
 end
 
 handlers["PART"] = function(o, prefix, channel, reason)
-	local user = parsePrefix(prefix)
+	local user = util.parsePrefix(prefix)
 	if o.track_users then
 		if user.nick == o.nick then
 			o.channels[channel] = nil
@@ -50,7 +50,7 @@ handlers["PART"] = function(o, prefix, channel, reason)
 end
 
 handlers["QUIT"] = function(o, prefix, msg)
-	local user = parsePrefix(prefix)
+	local user = util.parsePrefix(prefix)
 	if o.track_users then
 		for channel, v in pairs(o.channels) do
 			v.users[user.nick] = nil
@@ -60,7 +60,7 @@ handlers["QUIT"] = function(o, prefix, msg)
 end
 
 handlers["NICK"] = function(o, prefix, newnick)
-	local user = parsePrefix(prefix)
+	local user = util.parsePrefix(prefix)
 	if o.track_users then
 		for channel, v in pairs(o.channels) do
 			local users = v.users
@@ -97,8 +97,11 @@ handlers["353"] = function(o, prefix, me, chanType, channel, names)
 
 		local users = o.channels[channel].users
 		for nick in names:gmatch("(%S+)") do
-			local access, name = parseNick(nick)
-			users[name] = {access = access}
+			local access, name = util.parseNick(nick)
+			users[name] = {
+				nick = name;
+				access = access;
+			}
 		end
 	end
 end
@@ -106,7 +109,7 @@ end
 --end of NAMES
 handlers["366"] = function(o, prefix, me, channel, msg)
 	if o.track_users then
-		o:invoke("NameList", channel, msg)
+		o:invoke("NameList", channel, o.channels[channel].users, msg)
 	end
 end
 
@@ -130,7 +133,15 @@ handlers["333"] = function(o, prefix, me, channel, nick, time)
 end
 
 handlers["KICK"] = function(o, prefix, channel, kicked, reason)
-	o:invoke("OnKick", channel, kicked, parsePrefix(prefix), reason)
+	local user = util.parsePrefix(prefix)
+	if o.track_users then
+		if user.nick == o.nick then
+			o.channels[channel] = nil
+		else
+			o.channels[channel].users[user.nick] = nil
+		end
+	end
+	o:invoke("OnKick", channel, kicked, user, reason)
 end
 
 --RPL_UMODEIS
@@ -164,7 +175,7 @@ handlers["MODE"] = function(o, prefix, target, modes, ...)
 			end
 		end
 	end
-	o:invoke("OnModeChange", parsePrefix(prefix), target, modes, ...)
+	o:invoke("OnModeChange", util.parsePrefix(prefix), target, modes, ...)
 end
 
 handlers["ERROR"] = function(o, prefix, message)
@@ -172,3 +183,5 @@ handlers["ERROR"] = function(o, prefix, message)
 	o:shutdown()
 	error(message, 3)
 end
+
+return handlers
