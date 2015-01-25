@@ -49,9 +49,17 @@ local function parse(line)
 end
 
 local function parseAccess(accessString)
-	local access = {op = false, halfop = false, voice = false}
+	local access = {
+		owner = false;
+		admin = false;
+		op = false;
+		halfop = false;
+		voice = false;
+	}
 	for c in accessString:gmatch(".") do
-		if     c == "@" then access.op = true
+		if     c == "~" then access.owner = true
+		elseif c == "&" then access.admin = true
+		elseif c == "@" then access.op = true
 		elseif c == "%" then access.halfop = true
 		elseif c == "+" then access.voice = true
 		end
@@ -60,14 +68,14 @@ local function parseAccess(accessString)
 end
 
 local function parseNick(nick)
-	local access, name = nick:match("^([%+@]*)(.+)$")
+	local access, name = nick:match("^([%%+@&~]*)(.+)$")
 	return parseAccess(access or ""), name
 end
 
 local function parsePrefix(prefix)
 	local user = {}
 	if prefix then
-		user.access, user.nick, user.username, user.host = prefix:match("^([%+@]*)(.+)!(.+)@(.+)$")
+		user.access, user.nick, user.username, user.host = prefix:match("^([%%+@&~]*)(.+)!(.+)@(.+)$")
 	end
 	user.access = parseAccess(user.access or "")
 	return user

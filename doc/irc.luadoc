@@ -154,7 +154,7 @@ function irc:shutdown()
 -- <li><code>username</code> - User username.</li>
 -- <li><code>host</code> - User hostname.</li>
 -- <li><code>realname</code> - User real name.</li>
--- <li><code>access</code> - User access, available in channel-oriented callbacks. A table containing the boolean fields 'op', 'halfop', and 'voice'.</li>
+-- <li><code>access</code> - User access, available in channel-oriented callbacks. A table containing the boolean fields 'owner', 'admin', 'op', 'halfop', and 'voice'.</li>
 -- </ul>
 -- Apart from <code>nick</code>, fields may be missing. To fill them in, enable user tracking and use irc:whois.
 -- @name User
